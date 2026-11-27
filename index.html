@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Starship Production Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: mission-control readout, calm and exact; the user asked for a sober sci-fi look.
+   IDEA: a launch-operations console: countdown first, then the production line as a timeline.
+   PICTURE: the next-flight countdown and the flight timeline strip; the merged Gantt on the dashboard.
+   COLOUR and TYPE: near-black ground, white ink, four validated phase hues; Barlow / Barlow Condensed in capitals for headings.
+   LAYOUT: fixed top bar with tabs, content up to 1240px, cards stack below 760px. */
+:root{color-scheme:dark;--bg:#0b0d10;--panel:#111419;--panel2:#161a20;--line:#252b33;--line2:#323944;--ink:#e9ecef;--mute:#8d96a1;--dim:#5d6671;
+--p0:#338ced;--p1:#e76624;--p2:#00a888;--p3:#d28e05;--obs:#e9ecef;--man:#7fb2ff;--est:#5fd3a0;--bad:#ff6b6b;--fh:'Barlow Condensed','Arial Narrow',Arial,sans-serif;--fb:'Barlow','Segoe UI',Arial,sans-serif}
+:root[data-theme=light],:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font:300 16px/1.55 var(--fb);overflow-x:clip;-webkit-font-smoothing:antialiased}
+a{color:var(--ink)}
+h1,h2,h3,.cap{font-family:var(--fh);font-weight:500;text-transform:uppercase;letter-spacing:.12em;margin:0}
+h2{font-size:clamp(22px,2.4vw,30px);line-height:1.1}
+h3{font-size:15px;letter-spacing:.14em;color:var(--ink)}
+header{position:sticky;top:0;z-index:20;background:rgba(11,13,16,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar{max-width:1320px;margin:auto;display:flex;align-items:center;gap:24px;padding:0 max(3vw,16px);min-height:60px;flex-wrap:wrap}
+.brand{font-family:var(--fh);font-weight:600;letter-spacing:.22em;font-size:15px;text-transform:uppercase;white-space:nowrap;text-decoration:none}
+.brand b{font-weight:300;color:var(--mute)}
+nav{display:flex;gap:2px;overflow-x:auto;flex:1;scrollbar-width:none}
+nav a{flex:none;font-family:var(--fh);text-transform:uppercase;letter-spacing:.14em;font-size:13px;color:var(--mute);text-decoration:none;padding:20px 12px 18px;border-bottom:2px solid transparent;white-space:nowrap;min-height:44px}
+nav a:hover{color:var(--ink)}nav a[aria-current]{color:var(--ink);border-color:var(--ink)}
+nav .sep{width:1px;background:var(--line2);margin:16px 8px}
+main{max-width:1320px;margin:auto;padding:0 max(3vw,16px) 64px}
+section.view{display:none;padding-top:32px}section.view.on{display:block}
+.banner{display:none;max-width:1320px;margin:12px auto 0;padding:10px 16px;border:1px solid #6b5a1e;background:#1d1a0e;color:#f3dc8a;font-size:14px;gap:12px;align-items:center;flex-wrap:wrap}
+.banner.on{display:flex}a.banner{text-decoration:none}a.banner:hover{border-color:#c9a93a}.banner span{flex:1;min-width:220px}
+.grid{display:grid;gap:20px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.g2,.g4{grid-template-columns:minmax(0,1fr)}.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card{background:var(--panel);border:1px solid var(--line);padding:18px 20px 16px}
+.card-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.card-h p{margin:4px 0 0;color:var(--mute);font-size:14px}
+.tbtn{font:500 12px var(--fh);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);background:none;border:1px solid var(--line2);padding:6px 10px;cursor:pointer;min-height:32px}
+.tbtn:hover,.tbtn:focus-visible{color:var(--ink);border-color:var(--ink);outline:none}
+.btn{font:500 13px var(--fh);letter-spacing:.16em;text-transform:uppercase;color:var(--bg);background:var(--ink);border:1px solid var(--ink);padding:10px 18px;cursor:pointer;min-height:44px}
+.btn.ghost{background:none;color:var(--ink)}.btn:focus-visible{outline:2px solid var(--man);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--mute);margin:-2px 0 10px}
+.legend i{display:inline-block;width:14px;height:10px;margin-right:6px;vertical-align:-1px}
+.legend i.line{height:0;border-top:2px solid;width:18px;vertical-align:3px}
+.fig{position:relative;min-height:260px}.fig>svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+svg text{font-family:var(--fb);font-size:11px;fill:var(--mute)}
+svg .lab{fill:var(--ink);font-size:12px}
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:40px;align-items:center;padding:28px 0 36px;border-bottom:1px solid var(--line)}
+@media(max-width:900px){.hero{grid-template-columns:minmax(0,1fr);gap:20px}}
+.kicker{font:500 13px var(--fh);letter-spacing:.24em;text-transform:uppercase;color:var(--mute)}
+.count{font:300 clamp(64px,10vw,132px)/.9 var(--fh);letter-spacing:.02em;margin:10px 0 6px}
+.count small{font-size:.28em;letter-spacing:.2em;color:var(--mute);margin-left:10px}
+.hero-sub{font:400 clamp(20px,2.2vw,28px)/1.2 var(--fh);letter-spacing:.1em;text-transform:uppercase}
+.hero-meta{color:var(--mute);margin-top:10px}
+.tiles .t{border-left:1px solid var(--line2);padding:4px 0 4px 16px}
+.t .v{font:400 30px/1.1 var(--fh);letter-spacing:.04em}.t .k{color:var(--mute);font-size:13px;margin-top:2px}
+.prose{max-width:760px}.prose p,.prose li{color:#c9ced4}.prose h3{margin:28px 0 8px}
+.prose ul{padding-left:20px}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th{font:500 12px var(--fh);letter-spacing:.12em;text-transform:uppercase;color:var(--mute);text-align:center;padding:8px 8px;border-bottom:1px solid var(--line2);white-space:normal;vertical-align:bottom}
+td{padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:center}
+td.n,th.n{text-align:center}
+tbody td:first-child{white-space:normal;min-width:7em}
+@media(max-width:600px){.bar{gap:6px;padding-top:10px}nav{width:100%;flex:none}nav a{padding:12px 10px}td,th{padding:6px 6px}}
+.scroll{overflow-x:auto}
+.flt{color:#fff;font-weight:500}
+.mc{display:inline-flex;align-items:center;gap:4px}
+.mv{font:inherit;background:none;border:1px solid transparent;color:inherit;padding:4px 8px;cursor:text;min-height:34px;display:inline-flex;align-items:baseline;gap:6px}
+.mv small{font-size:11px;opacity:.8;letter-spacing:.02em}
+.mv:hover,.mv:focus-visible{border-color:var(--line2);outline:none;background:var(--panel2)}
+.mc.est .mv{color:var(--est);font-style:italic}.mc.man .mv{color:var(--man);font-weight:500}
+.mx{background:none;border:1px solid var(--line2);color:var(--mute);width:24px;height:24px;line-height:20px;padding:0;cursor:pointer;font-size:15px}
+.mx:hover,.mx:focus-visible{color:var(--ink);border-color:var(--ink);outline:none}
+.minp{width:90px;text-align:center}
+input[type=date].empty:not(:focus){color:transparent}
+input[type=date].empty:not(:focus)::-webkit-datetime-edit{color:transparent}
+.obs{color:var(--obs)}.man{color:var(--man);font-weight:500}.est{color:var(--est);font-style:italic}.bad{background:#3a1416;color:#ffb3b3}
+.flown td{color:var(--mute)}
+.pill{font:500 11px var(--fh);letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border:1px solid var(--line2);color:var(--mute)}
+.pill.go{border-color:var(--est);color:var(--est)}
+input,select{font:400 16px var(--fb);background:var(--panel2);color:var(--ink);border:1px solid var(--line2);padding:6px 8px;min-height:38px;color-scheme:dark}
+input:focus,select:focus{outline:2px solid var(--man);outline-offset:-1px}
+.edit td{padding:4px 4px}.edit input[type=date]{width:150px}.edit input[type=number]{width:78px;text-align:right}.edit input.nm{width:76px}
+.edit input.bad{border-color:var(--bad);background:#2a1214}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+label.f{display:grid;gap:4px;font-size:14px;color:var(--mute);max-width:320px}
+.tip{position:fixed;z-index:60;pointer-events:none;background:#000;border:1px solid var(--line2);padding:8px 10px;font-size:13px;line-height:1.4;max-width:300px;display:none;white-space:pre-line}
+.menu{position:fixed;z-index:61;background:var(--panel2);border:1px solid var(--line2);display:none;min-width:180px}
+.menu button{display:block;width:100%;text-align:left;background:none;border:0;color:var(--ink);font:400 14px var(--fb);padding:12px 14px;cursor:pointer}
+.menu button:hover{background:var(--line)}
+.modal{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:16px}
+.modal.on{display:flex}.modal .box{background:var(--panel);border:1px solid var(--line2);max-width:min(1200px,100%);max-height:90vh;overflow:auto;padding:20px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;font-size:14px;z-index:80;display:none}
+footer{border-top:1px solid var(--line);color:var(--dim);font-size:13px;padding:20px max(3vw,16px);text-align:center}
+.note{color:var(--mute);font-size:14px}
+textarea{width:100%;height:50vh;background:var(--panel2);color:var(--ink);border:1px solid var(--line2);font:13px/1.4 ui-monospace,Consolas,monospace}
+@media(prefers-reduced-motion:no-preference){section.view.on{animation:fade .35s ease}@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1}}}
+</style>
+</head>
+<body>
+<header><div class="bar">
+<a class="brand" href="#home">Starship <b>Production Tracker</b></a>
+<nav id="nav">
+<a href="#home" data-i18n="Home">Home</a><a href="#boosters" data-i18n="Boosters">Boosters</a><a href="#ships" data-i18n="Ships">Ships</a>
+<span class="sep"></span><a href="#observed" data-i18n="Observed milestones">Observed milestones</a><a href="#setup" data-i18n="Settings">Settings</a>
+</nav></div></header>
+<a class="banner" id="banner" href="#setup"><span><b data-i18n="Sandbox mode.">Sandbox mode.</b> <span data-i18n="You have modifications that only exist in this browser. Click here to download or discard them.">You have modifications that only exist in this browser. Click here to download or discard them.</span></span><span class="cap" style="flex:none" data-i18n="Settings →">Settings →</span></a>
+<main>
+<section class="view" id="v-home"></section>
+<section class="view" id="v-boosters"></section>
+<section class="view" id="v-ships"></section>
+<section class="view" id="v-observed"></section>
+<section class="view" id="v-setup"></section>
+</main>
+<footer><span data-i18n="Fan-made project, not affiliated with SpaceX. Dates from the SpaceX Fandom wiki (community data, CC BY-SA). Forecasts are statistical estimates, not announcements.">Fan-made project, not affiliated with SpaceX. Dates from the SpaceX Fandom wiki (community data, CC BY-SA). Forecasts are statistical estimates, not announcements.</span> <span id="upd"></span></footer>
+<div class="tip" id="tip"></div>
+<div class="menu" id="menu"></div>
+<div class="modal" id="modal" role="dialog" aria-modal="true"><div class="box"><div class="card-h"><h3 id="mt"></h3><button class="tbtn" data-act="close" data-i18n="Close">Close</button></div><div id="mb"></div></div></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="file" accept=".json,application/json" hidden>
+<script id="official" type="application/json">{"meta": {"title": "Starship Production Tracker", "updated": "2026-11-27", "source": "SpaceX Fandom wiki (community data)", "schema": 1}, "settings": {"refDate": null, "nPoints": 4, "ratioMin": 0.85}, "milestones": {"ship": ["Spotted", "Stacking Start", "Stacking End", "Aft flap installed", "Massey Rollout", "First Cryo", "Last Cryo", "First static", "Last static", "Launch"], "booster": ["Spotted", "Stacking Start", "Stacking End", "Massey Rollout", "First Cryo", "Last Cryo", "First static", "Last static", "Launch"]}, "ships": [{"name": "S39", "dates": {"Spotted": "2025-03-16", "Stacking Start": "2025-08-16", "Stacking End": "2025-11-15", "Aft flap installed": "2026-01-20", "Massey Rollout": "2026-02-26", "First Cryo": "2026-03-01", "Last Cryo": "2026-03-04", "First static": "2026-04-11", "Last static": "2026-05-15", "Launch": "2026-05-22"}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "S40", "dates": {"Spotted": "2025-04-10", "Stacking Start": "2025-11-12", "Stacking End": "2026-03-02", "Aft flap installed": "2026-04-12", "Massey Rollout": "2026-05-02", "First Cryo": "2026-05-03", "Last Cryo": "2026-05-04", "First static": "2026-06-24", "Last static": "2026-07-01", "Launch": "2026-07-24"}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "S41", "dates": {"Spotted": "2025-05-27", "Stacking Start": "2026-03-16", "Stacking End": "2026-05-20", "Aft flap installed": "2026-05-29", "Massey Rollout": "2026-06-28", "First Cryo": "2026-06-29", "Last Cryo": "2026-07-03", "First static": "2026-08-19", "Last static": "2026-08-20", "Launch": "2026-09-28"}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "S42", "dates": {"Spotted": "2025-05-27", "Stacking Start": "2026-06-09", "Stacking End": "2026-07-24", "Aft flap installed": "2026-09-02", "Massey Rollout": "2026-09-02", "First Cryo": "2026-09-03", "Last Cryo": "2026-10-09", "First static": "2026-10-26", "Last static": "2026-10-27", "Launch": "2026-11-13"}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "S43", "dates": {"Spotted": "2025-06-19", "Stacking Start": "2026-07-14", "Stacking End": "2026-09-15", "Aft flap installed": "2026-09-27", "Massey Rollout": "2026-10-22", "First Cryo": "2026-10-23", "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "S44", "dates": {"Spotted": "2025-08-01", "Stacking Start": "2026-08-27", "Stacking End": "2026-10-20", "Aft flap installed": "2026-11-03", "Massey Rollout": "2026-11-19", "First Cryo": "2026-11-20", "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "S45", "dates": {"Spotted": "2025-08-25", "Stacking Start": "2026-09-22", "Stacking End": "2026-11-10", "Aft flap installed": "2026-11-21", "Massey Rollout": null, "First Cryo": null, "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "S46", "dates": {"Spotted": "2025-08-25", "Stacking Start": "2026-10-21", "Stacking End": null, "Aft flap installed": null, "Massey Rollout": null, "First Cryo": null, "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "S47", "dates": {"Spotted": "2025-08-25", "Stacking Start": "2026-11-14", "Stacking End": null, "Aft flap installed": null, "Massey Rollout": null, "First Cryo": null, "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "S48", "dates": {"Spotted": "2026-04-11", "Stacking Start": null, "Stacking End": null, "Aft flap installed": null, "Massey Rollout": null, "First Cryo": null, "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "S49", "dates": {"Spotted": "2026-04-28", "Stacking Start": null, "Stacking End": null, "Aft flap installed": null, "Massey Rollout": null, "First Cryo": null, "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "S50", "dates": {"Spotted": "2026-10-23", "Stacking Start": null, "Stacking End": null, "Aft flap installed": null, "Massey Rollout": null, "First Cryo": null, "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "S51", "dates": {"Spotted": "2026-10-23", "Stacking Start": null, "Stacking End": null, "Aft flap installed": null, "Massey Rollout": null, "First Cryo": null, "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "S52", "dates": {"Spotted": "2026-10-23", "Stacking Start": null, "Stacking End": null, "Aft flap installed": null, "Massey Rollout": null, "First Cryo": null, "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}], "boosters": [{"name": "B19", "dates": {"Spotted": "2025-07-16", "Stacking Start": "2025-11-27", "Stacking End": "2025-12-23", "Massey Rollout": "2026-02-01", "First Cryo": "2026-02-01", "Last Cryo": "2026-02-07", "First static": "2026-03-09", "Last static": "2026-05-07", "Launch": "2026-05-22"}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "B20", "dates": {"Spotted": "2026-02-05", "Stacking Start": "2026-02-06", "Stacking End": "2026-04-30", "Massey Rollout": "2026-06-05", "First Cryo": "2026-06-06", "Last Cryo": "2026-06-07", "First static": "2026-07-10", "Last static": "2026-07-10", "Launch": "2026-07-24"}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "B21", "dates": {"Spotted": "2025-11-22", "Stacking Start": "2026-05-10", "Stacking End": "2026-06-29", "Massey Rollout": "2026-07-17", "First Cryo": "2026-07-18", "Last Cryo": "2026-07-20", "First static": "2026-08-28", "Last static": "2026-08-28", "Launch": "2026-09-28"}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "B22", "dates": {"Spotted": "2026-06-29", "Stacking Start": "2026-06-29", "Stacking End": "2026-08-14", "Massey Rollout": "2026-09-08", "First Cryo": "2026-09-09", "Last Cryo": "2026-09-10", "First static": "2026-10-25", "Last static": "2026-10-25", "Launch": "2026-11-13"}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "B23", "dates": {"Spotted": "2026-08-14", "Stacking Start": "2026-08-14", "Stacking End": "2026-09-25", "Massey Rollout": "2026-10-13", "First Cryo": "2026-10-15", "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "B24", "dates": {"Spotted": "2026-09-25", "Stacking Start": "2026-09-28", "Stacking End": "2026-10-30", "Massey Rollout": "2026-11-20", "First Cryo": "2026-11-22", "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "B25", "dates": {"Spotted": "2026-11-02", "Stacking Start": "2026-11-02", "Stacking End": null, "Massey Rollout": null, "First Cryo": null, "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}, {"name": "B26", "dates": {"Spotted": null, "Stacking Start": null, "Stacking End": null, "Massey Rollout": null, "First Cryo": null, "Last Cryo": null, "First static": null, "Last static": null, "Launch": null}, "manual": {"Stacking": null, "Stacking End → First Cryo": null, "First Cryo → First static": null, "First static → Launch": null}}], "flights": [{"name": "Flight 12", "ship": "S39", "booster": "B19"}, {"name": "Flight 13", "ship": "S40", "booster": "B20"}, {"name": "Flight 14", "ship": "S41", "booster": "B21"}, {"name": "Flight 15", "ship": "S42", "booster": "B22"}, {"name": "Flight 16", "ship": "S43", "booster": "B23"}, {"name": "Flight 17", "ship": "S44", "booster": "B24"}, {"name": "Flight 18", "ship": "S45", "booster": "B25"}, {"name": "Flight 19", "ship": "S46", "booster": "B26"}]}</script>
+<script>// Starship Production Tracker — forecast engine (same logic as the Excel workbook)
+const Engine = (() => {
+  const MACRO = ["Stacking Start", "Stacking End", "First Cryo", "First static", "Launch"];
+  const PHASES = ["Stacking", "Stacking End → First Cryo", "First Cryo → First static", "First static → Launch"];
+  const DAY = 86400000;
+  const toDay = s => (s ? Math.round(Date.parse(s + "T00:00:00Z") / DAY) : null);
+  const toISO = d => (d == null ? null : new Date(d * DAY).toISOString().slice(0, 10));
+  const isNum = v => typeof v === "number" && isFinite(v);
+  const median = a => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+  const mean = a => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null);
+
+  // geometric-decay estimate from previous observed values (array of {x, v})
+  function geoEstimate(points, x, N, ratioMin) {
+    if (!points.length) return null;
+    const pts = points.slice(-N), k = pts.length;
+    const ys = pts.map(p => Math.log(Math.max(p.v, 1))), xs = pts.map(p => p.x);
+    const mx = mean(xs), my = mean(ys), geo = Math.exp(my);
+    let raw = null;
+    if (k >= 2) {
+      let num = 0, den = 0;
+      for (let i = 0; i < k; i++) { num += (xs[i] - mx) * (ys[i] - my); den += (xs[i] - mx) ** 2; }
+      raw = Math.exp(num / den);
+    }
+    const used = raw == null ? 1 : Math.min(1, Math.max(ratioMin, raw));
+    return { points: k, from: pts[0].name, geo, raw, used, est: geo * used ** (x - mx) };
+  }
+
+  function computeKind(units, msList, settings, ref) {
+    const ms = msList.slice(1); // without Spotted
+    const mi = MACRO.map(m => ms.indexOf(m));
+    const N = settings.nPoints, rmin = settings.ratioMin;
+    const rows = units.map((u, i) => {
+      const obs = ms.map(m => toDay(u.dates[m]));
+      return { name: u.name, i, u, obs, spotted: toDay(u.dates.Spotted), manual: PHASES.map(p => (isNum(u.manual?.[p]) ? u.manual[p] : null)) };
+    });
+    // observed durations: micro steps, phases, total, inner segments
+    const micro = rows.map(r => ms.slice(1).map((_, k) => (r.obs[k + 1] != null && r.obs[k] != null ? r.obs[k + 1] - r.obs[k] : null)));
+    const phaseObs = rows.map(r => mi.slice(0, 4).map((a, p) => { const b = mi[p + 1]; return r.obs[a] != null && r.obs[b] != null ? r.obs[b] - r.obs[a] : null; }));
+    const totalObs = rows.map(r => (r.obs[mi[0]] != null && r.obs[mi[4]] != null ? r.obs[mi[4]] - r.obs[mi[0]] : null));
+    const segs = []; // {p, j}
+    for (let p = 0; p < 4; p++) for (let j = mi[p] + 1; j < mi[p + 1]; j++) segs.push({ p, j, b: mi[p + 1] });
+    const segObs = rows.map(r => segs.map(s => (r.obs[s.j] != null && r.obs[s.b] != null ? r.obs[s.b] - r.obs[s.j] : null)));
+    // estimates (from previous units only)
+    const series = (getter) => rows.map((r, i) => {
+      const pts = [];
+      for (let q = 0; q < i; q++) { const v = getter(q); if (v != null) pts.push({ x: q, v, name: rows[q].name }); }
+      return geoEstimate(pts, i, N, rmin);
+    });
+    const phaseEst = [0, 1, 2, 3].map(p => series(q => phaseObs[q][p]));
+    const segEst = segs.map((s, si) => series(q => segObs[q][si]));
+    // forecast
+    rows.forEach((r, i) => {
+      r.started = r.obs[mi[0]] != null;
+      r.dates = [r.started ? r.obs[mi[0]] : null];
+      r.src = ["obs"];
+      r.phaseEst = phaseEst.map(e => e[i]?.est ?? null);
+      for (let p = 0; p < 4; p++) {
+        const a = mi[p], b = mi[p + 1], start = r.dates[p];
+        if (start == null) { r.dates.push(null); r.src.push(null); continue; }
+        let end, src;
+        if (r.obs[b] != null) { end = r.obs[b]; src = "obs"; }
+        else if (r.manual[p] != null) { end = Math.max(ref, start + r.manual[p]); src = "manual"; }
+        else {
+          const e = r.phaseEst[p] ?? 0;
+          let auto = start + e;
+          for (let j = a + 1; j < b; j++) {
+            if (r.obs[j] != null) {
+              const si = segs.findIndex(s => s.p === p && s.j === j);
+              auto = Math.max(start + e, r.obs[j] + (segEst[si][i]?.est ?? 0));
+            }
+          }
+          end = Math.max(ref, Math.round(auto)); src = "est";
+        }
+        r.dates.push(end); r.src.push(src);
+      }
+      r.retained = [0, 1, 2, 3].map(p => (r.started ? r.dates[p + 1] - r.dates[p] : null));
+      r.total = r.started ? r.dates[4] - r.dates[0] : null;
+      r.launched = r.obs[mi[4]] != null;
+      let last = "Spotted";
+      ms.forEach((m, k) => { if (r.obs[k] != null) last = k === ms.length - 1 ? "Launched" : m; });
+      r.status = last;
+      // chart parts: observed vs forecast per phase
+      r.parts = [0, 1, 2, 3].map(p => {
+        if (!r.started) return null;
+        const s = r.dates[p], e = r.dates[p + 1], a = mi[p], b = mi[p + 1];
+        const o = r.obs[b] != null ? e - s : r.obs[a] != null ? Math.max(0, Math.min(ref, e) - s) : 0;
+        return { obs: o, fc: e - s - o };
+      });
+    });
+    // cadence: gap with previous unit for each milestone (Spotted + all)
+    const allMs = ["Spotted", ...ms];
+    const gapsObs = rows.map((r, i) => allMs.map((m, k) => {
+      if (i === 0) return null;
+      const a = k === 0 ? r.spotted : r.obs[k - 1], b = k === 0 ? rows[i - 1].spotted : rows[i - 1].obs[k - 1];
+      return a != null && b != null ? a - b : null;
+    }));
+    const gapsFc = rows.map((r, i) => MACRO.map((m, j) => (i > 0 && r.dates[j] != null && rows[i - 1].dates[j] != null ? r.dates[j] - rows[i - 1].dates[j] : null)));
+    const colStats = (mat, c) => { const v = mat.map(r => r[c]).filter(x => x != null); return { avg: mean(v), med: median(v), n: v.length }; };
+    return { ms, mi, rows, micro, phaseObs, totalObs, segs, segObs, phaseEst, segEst, gapsObs, gapsFc, allMs, colStats };
+  }
+
+  function compute(data) {
+    const settings = Object.assign({ nPoints: 4, ratioMin: 0.85, refDate: null }, data.settings || {});
+    const ref = settings.refDate ? toDay(settings.refDate) : Math.floor(Date.now() / DAY);
+    const ships = computeKind(data.ships || [], data.milestones.ship, settings, ref);
+    const boosters = computeKind(data.boosters || [], data.milestones.booster, settings, ref);
+    const find = (K, n) => K.rows.find(r => r.name === n);
+    const flights = (data.flights || []).map(f => {
+      const s = find(ships, f.ship), b = find(boosters, f.booster);
+      const sr = s?.dates?.[4] ?? null, br = b?.dates?.[4] ?? null;
+      const date = sr != null && br != null ? Math.max(sr, br) : null;
+      const status = date == null ? "No forecast yet" : s.launched && b.launched ? "Flown" : "Forecast";
+      const waiting = status !== "Forecast" ? null : sr > br ? "Ship" : br > sr ? "Booster" : "Both";
+      return { ...f, shipReady: sr, boosterReady: br, date, status, waiting, margin: status === "Forecast" ? Math.abs(sr - br) : null,
+               src: date == null ? null : status === "Flown" ? "obs" : (sr >= br ? s : b).src[4] };
+    });
+    const upcoming = [];
+    [["Booster", boosters], ["Ship", ships]].forEach(([kind, K]) => K.rows.forEach(r => {
+      if (!r.started) return;
+      for (let p = 1; p <= 4; p++) if (r.obs[K.mi[p]] == null) upcoming.push({ kind, unit: r.name, milestone: p === 4 ? "Launch ready" : MACRO[p], date: r.dates[p], src: r.src[p] });
+    }));
+    flights.forEach(f => { if (f.status === "Forecast") upcoming.push({ kind: "Flight", unit: f.name, milestone: "Launch", date: f.date, src: f.src, flight: f }); });
+    upcoming.sort((a, b) => a.date - b.date); // stable: boosters, ships, then flights
+    return { settings, ref, ships, boosters, flights, upcoming };
+  }
+  return { compute, MACRO, PHASES, toDay, toISO, median, mean };
+})();
+if (typeof module !== "undefined") module.exports = Engine;
+</script>
+<script>{
+const $ = s => document.querySelector(s);
+// ---------- i18n (English default; French translation; choice kept in this browser)
+const LKEY = "spt-lang";
+let LANG = (() => { try { return localStorage.getItem(LKEY) === "fr" ? "fr" : "en"; } catch (e) { return "en"; } })();
+const MSFR = { "Spotted": "Repéré", "Stacking Start": "Début du stacking", "Stacking End": "Fin du stacking", "Aft flap installed": "Ailerons arrière installés",
+  "Massey Rollout": "Rollout vers Massey", "First Cryo": "Premier test cryo", "Last Cryo": "Dernier test cryo", "First static": "Première mise à feu",
+  "Last static": "Dernière mise à feu", "Launch": "Lancement", "Launch ready": "Prêt au lancement", "Launched": "Lancé", "Stacking": "Stacking" };
+const tm = s => (LANG !== "fr" || s == null ? s : String(s).split(" → ").map(x => MSFR[x] || x).join(" → "));
+const FIRST_FLIGHT = 12;
+const tn = n => `${t("Flight")} ${n}`;
+const DU = () => (LANG === "fr" ? "j" : "d");
+const FR = {
+  // static shell
+  "Home": "Accueil", "Ships": "Ships", "Boosters": "Boosters", "Observed milestones": "Jalons observés", "Settings": "Réglages",
+  "Sandbox mode.": "Mode bac à sable.", "You have modifications that only exist in this browser. Click here to download or discard them.": "Vous avez des modifications qui n'existent que dans ce navigateur. Cliquez ici pour les télécharger ou les annuler.",
+  "Settings →": "Réglages →", "Close": "Fermer",
+  "Fan-made project, not affiliated with SpaceX. Dates from the SpaceX Fandom wiki (community data, CC BY-SA). Forecasts are statistical estimates, not announcements.": "Projet de fan, non affilié à SpaceX. Dates issues du wiki SpaceX Fandom (données communautaires, CC BY-SA). Les prévisions sont des estimations statistiques, pas des annonces.",
+  "Dates of {d}.": "Dates du {d}.",
+  // home
+  "Next flight · forecast": "Prochain vol · prévision", "days": "jours", "No forecast available": "Aucune prévision disponible",
+  "Around {d}.": "Vers le {d}.", "Waiting on the {w}": "En attente du {w}", "({m} days behind its partner)": "({m} jours après son partenaire)",
+  "Last flight": "Dernier vol", "Boosters in production": "Boosters en production", "Ships in production": "Ships en production", "Median gap between launches": "Écart médian entre lancements",
+  "Production timeline": "Calendrier de production", "Boosters above the line, ships below. Stacking start to launch ready.": "Boosters au-dessus de la ligne, ships en dessous. Du début du stacking à « prêt au lancement ».",
+  "Flights": "Vols", "Launch = the later of its ship and booster being ready.": "Lancement = le plus tardif entre le booster et le ship prêts.",
+  "Flight": "Vol", "Booster + ship": "Booster + ship", "Waiting on": "En attente de", "flown": "lancé",
+  "Upcoming milestones": "Prochaines étapes", "Nearest first. <i>Launch ready</i>: the unit is ready to fly; <i>Launch</i>: the flight itself.": "La plus proche d'abord. <i>Prêt au lancement</i> : l'engin est prêt à voler ; <i>Lancement</i> : le vol lui-même.",
+  "{n} more in the data table.": "{n} de plus dans le tableau de données.",
+  "In (d)": "Dans (j)", "In (days)": "Dans (jours)", "Date": "Date", "Unit": "Engin", "Milestone": "Étape", "Source": "Source",
+  "What it is": "Objet du site", "How the forecast works": "Comment fonctionne la prévision", "How to read it": "Comment lire ce site",
+  "home.what": "Un suivi communautaire de la chaîne de production de Starship. Chaque booster et chaque ship passe par les mêmes étapes, du stacking au lancement. Les dates observées viennent du wiki SpaceX Fandom ; le suivi en tire une prévision pour chaque engin déjà en production, puis associe boosters et ships en vols.",
+  "home.b1": "La production est découpée en quatre grandes phases : <b>stacking</b>, <b>fin du stacking → premier test cryo</b>, <b>premier test cryo → première mise à feu</b>, <b>première mise à feu → prêt au lancement</b>.",
+  "home.b2": "Pour les étapes déjà observées, la date observée est conservée. Sinon, chaque phase dure sa durée <span class=\"est\">estimée</span>, ou une durée <span class=\"man\">manuelle</span> fixée par le responsable du suivi.",
+  "home.b3": "L'estimation suit une courbe d'apprentissage : une décroissance géométrique ajustée sur les {n} derniers engins, qui n'augmente jamais.",
+  "home.b4": "Une phase en retard ne peut pas finir avant aujourd'hui ; les étapes intermédiaires (par exemple l'installation des ailerons arrière ou le rollout vers Massey) repoussent la date de fin quand elles sont atteintes.",
+  "home.n1": "Seuls les engins dont le stacking a commencé ont une prévision : l'attente entre « repéré » et « début du stacking » est trop irrégulière pour être estimée.",
+  "home.r1": "Couleurs des dates et des durées : <span class=\"obs\">observé</span>, <span class=\"man\">manuel</span>, <span class=\"est\">estimé</span>. Dans les graphiques, les marques pleines sont observées et les barres hachurées sont des prévisions. Sur les courbes d'apprentissage, les cercles creux sont des estimations et les triangles des estimations manuelles.",
+  "home.r2": "<b>Clic droit sur un graphique</b> (ou son bouton) pour voir les chiffres qui sont derrière.",
+  "home.r3": "Tout est un bac à sable : modifiez une date observée, une estimation manuelle ou un réglage, et toutes les prévisions se mettent à jour en direct. Vos modifications restent dans votre navigateur ; les Réglages permettent de les télécharger ou de les annuler.",
+  "Dates of {d}: load a newer dates file in Settings when one is shared. Reference date: {r}.": "Dates du {d} : chargez un fichier de dates plus récent dans les Réglages quand il est partagé. Date de référence : {r}.",
+  "Today": "Aujourd'hui", "Forecast (hatched)": "Prévision (hachuré)", "Data table": "Tableau de données",
+  // flights
+  "Booster": "Booster", "Ship": "Ship", "Booster ready": "Booster prêt", "Ship ready": "Ship prêt", "Margin": "Écart",
+  "Flown": "Lancé", "Forecast": "Prévision", "No forecast yet": "Pas encore de prévision", "Both": "les deux", "ship": "ship", "booster": "booster", "both": "les deux",
+  "observed": "observé", "manual": "manuel", "estimated": "estimé", "{s} forecast": "prévision {s}",
+  // tables
+  "Production timeline (macro milestones)": "Calendrier de production (grandes étapes)", "Last milestone": "Dernière étape", "Total (d)": "Total (j)",
+  "{k}: days since the previous unit reached the same milestone (observed)": "{k} : jours depuis que l'engin précédent a atteint la même étape (observé)",
+  "{k}: {p}, learning curve": "{k} : {p}, courbe d'apprentissage", "Observed duration (d)": "Durée observée (j)", "Estimate (d)": "Estimation (j)", "Ratio observed": "Ratio observé", "Ratio used": "Ratio utilisé",
+  "learn.note": "Estimation : moyenne géométrique des N dernières durées observées avant l'engin, extrapolée avec le ratio utilisé. Ratio observé : durée observée divisée par la précédente durée observée, pour vérifier le modèle a posteriori. Ratio utilisé : ratio ajusté par engin, maintenu entre le ratio minimal et 1.",
+  "{k}: manual estimates (days)": "{k} : estimations manuelles (jours)",
+  "man.note": "Cliquez sur une valeur pour saisir une durée manuelle ; × (ou une valeur vide) revient à l'estimation. Les valeurs en blanc sont observées.",
+  "Click to type a manual value": "Cliquez pour saisir une valeur manuelle", "Back to the estimate": "Revenir à l'estimation",
+  // analyses
+  "Analyses and manual estimates of the {k} production line. Right-click a chart for its numbers.": "Analyses et estimations manuelles de la chaîne de production des {k}. Clic droit sur un graphique pour voir ses chiffres.",
+  "Phase durations per unit": "Durée des phases par engin", "How long each macro phase took, or is expected to take.": "Durée de chaque grande phase, observée ou prévue.", "Manual estimates": "Estimations manuelles",
+  "Cadence between consecutive units": "Cadence entre engins successifs", "Days since the previous unit reached the same milestone. Converging lines mean a balanced line; launch in bold.": "Jours depuis que l'engin précédent a atteint la même étape. Des courbes qui convergent signalent une chaîne équilibrée ; le lancement est en gras.",
+  "Learning curves": "Courbes d'apprentissage", "Click a hollow estimate to turn it into a manual estimate (triangle), drag the triangle to change it, double-click it to remove it.": "Cliquez sur une estimation (cercle creux) pour en faire une estimation manuelle (triangle), faites glisser le triangle pour la modifier, double-cliquez dessus pour la supprimer.",
+  "Observed": "Observé", "Estimate (click to set manually)": "Estimation (cliquez pour la fixer)", "Manual (drag)": "Manuel (à faire glisser)", "Model on past units": "Modèle sur les engins passés", "Model forecast": "Prévision du modèle",
+  "{u} · observed {v} {d}": "{u} · observé {v} {d}", "{u} · estimate {v} {d}": "{u} · estimation {v} {d}", "Click to set a manual estimate": "Cliquez pour fixer une estimation manuelle",
+  "{u} · manual {v} {d}": "{u} · manuel {v} {d}", "Drag to change · double-click to remove": "Faites glisser pour modifier · double-clic pour supprimer",
+  "Remove manual estimate": "Supprimer l'estimation manuelle", "View data table": "Voir le tableau de données",
+  // observed tab
+  "Dates actually observed for each milestone. Red: date earlier than a previous milestone. Manual estimates are set in the Ships and Boosters tabs.": "Dates réellement observées pour chaque étape. En rouge : date antérieure à une étape précédente. Les estimations manuelles se règlent dans les onglets Boosters et Ships.",
+  "Add booster": "Ajouter un booster", "Add ship": "Ajouter un ship", "Remove": "Supprimer", "Confirm?": "Confirmer ?", "Name": "Nom",
+  // settings
+  "Your modifications, model parameters and flight pairings.": "Vos modifications, les paramètres du modèle et l'appariement des vols.",
+  "Language": "Langue", "Modifications": "Modifications", "Linked dates file:": "Fichier de dates lié :", "built into the page": "intégré à la page", "dates of {d}": "dates du {d}",
+  "Your modifications apply on top of this file. They are saved automatically, but only in this browser.": "Vos modifications s'appliquent par-dessus ce fichier. Elles sont enregistrées automatiquement, mais uniquement dans ce navigateur.", "No modifications.": "Aucune modification.",
+  "Download modifications": "Télécharger les modifications", "Load dates": "Charger des dates", "Copy as text": "Copier en texte", "Discard modifications": "Annuler les modifications",
+  "set.l1": "<b>Télécharger les modifications</b> enregistre tout ce que vous voyez (dates observées, estimations manuelles, vols, réglages) dans un fichier, data.json.",
+  "set.l2": "<b>Charger des dates</b> charge un nouveau fichier de dates (data.json), par exemple le dernier partagé sur Discord. Il devient le fichier de dates lié et remplace vos modifications. La page s'en souvient : inutile de le recharger la prochaine fois.",
+  "set.l3": "<b>Annuler les modifications</b> efface vos modifications et revient au fichier de dates lié.",
+  "Model": "Modèle", "Reference date (empty = today)": "Date de référence (vide = aujourd'hui)", "Points used for each estimate (N)": "Points utilisés pour chaque estimation (N)", "Minimum ratio per unit (0.5 to 1)": "Ratio minimal par engin (0.5 à 1)",
+  "Which booster flies with which ship.": "Quel booster vole avec quel ship.", "Add flight": "Ajouter un vol",
+  "Discard modifications and load?": "Annuler les modifications et charger ?",
+  // toasts
+  "Modifications discarded.": "Modifications annulées.", "Modifications copied to the clipboard.": "Modifications copiées dans le presse-papiers.",
+  "This file is not valid JSON.": "Ce fichier n'est pas un JSON valide.", "This JSON does not look like tracker data.": "Ce JSON ne ressemble pas à des données du suivi.",
+  "Loaded {f}: dates of {d}.": "{f} chargé : dates du {d}.", "data.json downloaded. If nothing happened, use Copy as text.": "data.json téléchargé. Si rien ne s'est passé, utilisez « Copier en texte ».",
+  "Modifications (JSON)": "Modifications (JSON)", "If no download started, copy this text into a file named data.json.": "Si aucun téléchargement n'a démarré, copiez ce texte dans un fichier nommé data.json.",
+};
+const EN = {
+  "home.what": "A community tracker of the Starship production line. Each booster and ship goes through the same milestones, from stacking to launch. Observed dates come from the SpaceX Fandom wiki; the tracker turns them into a forecast for every unit already in production, then pairs boosters and ships into flights.",
+  "home.b1": "Production is split into four macro phases: <b>stacking</b>, <b>stacking end → first cryo</b>, <b>first cryo → first static</b>, <b>first static → launch ready</b>.",
+  "home.b2": "For milestones already observed, the observed date is kept. Otherwise each phase lasts its <span class=\"est\">estimated</span> duration, or a <span class=\"man\">manual</span> duration set by the maintainer.",
+  "home.b3": "The estimate follows a learning curve: a geometric decay fitted on the last {n} units, never growing.",
+  "home.b4": "A phase running late cannot end before today; inner milestones (e.g. aft flap installation, Massey rollout) push the end date when they are reached.",
+  "home.n1": "Only units whose stacking has started get a forecast: the wait between \"spotted\" and \"stacking start\" is too irregular to estimate.",
+  "home.r1": "Colours of dates and durations: <span class=\"obs\">observed</span>, <span class=\"man\">manual</span>, <span class=\"est\">estimated</span>. In charts, solid marks are observed and hatched bars are forecasts. On learning curves, hollow circles are estimates and triangles are manual estimates.",
+  "home.r2": "<b>Right-click any chart</b> (or use its button) to see the numbers behind it.",
+  "home.r3": "Everything is a sandbox: change an observed date, a manual estimate or a setting and every forecast updates live. Your modifications stay in your browser; Settings lets you download or discard them.",
+  "learn.note": "Estimate: geometric mean of the last N observed durations before the unit, extrapolated with the ratio used. Ratio observed: observed duration divided by the previous observed one, to check the model afterwards. Ratio used: fitted ratio per unit, kept between the minimum ratio and 1.",
+  "man.note": "Click a value to type a manual duration; × (or an empty value) goes back to the estimate. White values are observed.",
+  "set.l1": "<b>Download modifications</b> saves everything you see (observed dates, manual estimates, flights, settings) as a file, data.json.",
+  "set.l2": "<b>Load dates</b> loads a new dates file (data.json), for example the latest one shared on Discord. It becomes the linked dates file and replaces your modifications. The page remembers it, no need to load it again next time.",
+  "set.l3": "<b>Discard modifications</b> forgets your modifications and goes back to the linked dates file.",
+};
+function t(s, v) { let o = (LANG === "fr" && FR[s]) || EN[s] || s; if (v) for (const k in v) o = o.split("{" + k + "}").join(v[k]); return o; }
+const MONS = { en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], fr: ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."] };
+function applyStatic() {
+  document.documentElement.lang = LANG;
+  document.querySelectorAll("[data-i18n]").forEach(el => (el.textContent = t(el.dataset.i18n)));
+}
+
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const { MACRO, PHASES, toISO, toDay } = Engine;
+const PC = ["var(--p0)", "var(--p1)", "var(--p2)", "var(--p3)"];
+const PHX = ["#338ced", "#e76624", "#00a888", "#d28e05"];
+const fmt = d => { if (d == null) return ""; const t = new Date(d * 864e5); return `${String(t.getUTCDate()).padStart(2, "0")} ${MONS[LANG][t.getUTCMonth()]} ${t.getUTCFullYear()}`; };
+const fmtS = d => { const t = new Date(d * 864e5); return `${MONS[LANG][t.getUTCMonth()]} ${String(t.getUTCFullYear()).slice(2)}`; };
+const r0 = v => (v == null ? "" : Math.round(v));
+const SRC = { obs: "obs", manual: "man", est: "est" };
+const SRCL = new Proxy({ obs: "observed", manual: "manual", est: "estimated" }, { get: (o, k) => t(o[k]) });
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
+const DKEY = "spt-draft-v1";
+
+// reference ("linked") dates = the last dates file loaded in this browser (or the page's built-in copy if newer / first visit)
+const BKEY = "spt-official-v1", NKEY = "spt-official-name";
+const upd = d => String(d?.meta?.updated || "");
+const updF = d => (upd(d) ? fmt(toDay(upd(d))) : "—");
+let OFFICIAL = JSON.parse($("#official").textContent);
+try { const st = JSON.parse(store.get(BKEY) || "null"); if (st && st.ships && upd(st) >= upd(OFFICIAL)) OFFICIAL = st; else store.del(NKEY); } catch (e) {}
+let data = structuredClone(OFFICIAL);
+let R = null;
+const draft = store.get(DKEY);
+if (draft) { try { data = JSON.parse(draft); } catch (e) {} }
+
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(toast.h); toast.h = setTimeout(() => (t.style.display = "none"), 3200); }
+const isDirty = () => JSON.stringify(data) !== JSON.stringify(OFFICIAL);
+function changed() { store.set(DKEY, JSON.stringify(data)); recompute(); }
+function recompute() {
+  R = Engine.compute(Object.assign({}, data, { flights: (data.flights || []).map((f, i) => Object.assign({}, f, { name: String(FIRST_FLIGHT + i) })) }));
+  $("#banner").classList.toggle("on", isDirty());
+  if (!isDirty()) store.del(DKEY);
+  $("#upd").textContent = t("Dates of {d}.", { d: updF(OFFICIAL) }); applyStatic();
+  render();
+  if (modalId && $("#modal").classList.contains("on")) { const sx = $("#modal .box").scrollTop; openTable(modalId); $("#modal .box").scrollTop = sx; }
+}
+
+// ---------- routing
+const VIEWS = ["home", "ships", "boosters", "observed", "setup"];
+const cur = () => (VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : "home");
+function render() {
+  const v = cur();
+  document.querySelectorAll("section.view").forEach(s => s.classList.toggle("on", s.id === "v-" + v));
+  document.querySelectorAll("#nav a").forEach(a => (a.getAttribute("href") === "#" + v ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
+  ({ home: vHome, ships: () => vKind("ships"), boosters: () => vKind("boosters"), observed: vObserved, setup: vSetup })[v]();
+  mountFigs();
+}
+addEventListener("hashchange", () => { render(); scrollTo(0, 0); });
+
+// ---------- figures (drawn at real size)
+const FIGS = new Map(); let figObs = null;
+function fig(id, h, drawFn, table) { FIGS.set(id, { drawFn, table }); return `<div class="fig" id="${id}" style="height:${h}px"><svg></svg></div>`; }
+function mountFigs() {
+  if (figObs) figObs.disconnect();
+  figObs = new ResizeObserver(es => es.forEach(e => drawFig(e.target)));
+  document.querySelectorAll("section.view.on .fig").forEach(el => figObs.observe(el));
+}
+function drawFig(el) { const f = FIGS.get(el.id); if (!f) return; const W = el.clientWidth, H = el.clientHeight; if (!W) return; el.querySelector("svg").innerHTML = f.drawFn(W, H, el.id); }
+const card = (id, title, sub, body, legend = "", btn = t("Data table")) =>
+  `<div class="card" data-table="${id}"><div class="card-h"><div><h3>${title}</h3>${sub ? `<p>${sub}</p>` : ""}</div><button class="tbtn" data-act="table" data-id="${id}">${btn}</button></div>${legend}${body}</div>`;
+const TABLES = {};
+const defs = id => `<defs>${PHX.map((c, i) => `<pattern id="${id}h${i}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="${c}" fill-opacity=".14"/><line x1="0" y1="0" x2="0" y2="6" stroke="${c}" stroke-width="2.2"/></pattern>`).join("")}</defs>`;
+const phaseLegend = () => `<div class="legend">${PHASES.map((p, i) => `<span><i style="background:${PHX[i]}"></i>${tm(p)}</span>`).join("")}<span><i style="background:repeating-linear-gradient(45deg,#8d96a1 0 2px,transparent 2px 5px)"></i>${t("Forecast (hatched)")}</span></div>`;
+const tipAttr = s => `data-tip="${esc(s)}"`;
+function niceStep(v) { const raw = Math.max(v, 4) / 5, p = 10 ** Math.floor(Math.log10(raw)), m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; }
+function niceMax(v) { const st = niceStep(v); return Math.ceil(Math.max(v, 4) / st) * st; }
+function yAxis(x0, x1, y, max, H0, n, unit = "") {
+  const st = niceStep(max); n = Math.round(max / st);
+  let s = ""; for (let i = 0; i <= n; i++) { const v = st * i, yy = y(v); s += `<line x1="${x0}" x2="${x1}" y1="${yy}" y2="${yy}" stroke="#252b33"/><text x="${x0 - 6}" y="${yy + 4}" text-anchor="end">${Math.round(v)}${unit}</text>`; } return s;
+}
+
+// Gantt: ships, separator, boosters
+function drawGantt(W, H, id) {
+  const rows = [];
+  R.boosters.rows.filter(r => r.started).forEach(r => rows.push({ r, k: "Booster" }));
+  rows.push(null);
+  R.ships.rows.filter(r => r.started).forEach(r => rows.push({ r, k: "Ship" }));
+  const all = rows.filter(Boolean);
+  const lo = Math.min(...all.map(o => o.r.dates[0])) - 10, hi = Math.max(...all.map(o => o.r.dates[4]), R.ref) + 20;
+  const L = 46, T = 30, B = 6, Rr = 10, x = d => L + ((d - lo) / (hi - lo)) * (W - L - Rr), rh = (H - T - B) / rows.length;
+  let s = defs(id);
+  const step = W < 600 ? 4 : 2;
+  for (let y = new Date(lo * 864e5).getUTCFullYear(), m = new Date(lo * 864e5).getUTCMonth() + 1; ; m += step) {
+    const d = Math.round(Date.UTC(y, m, 1) / 864e5); if (d > hi) break; if (d < lo) continue;
+    s += `<line x1="${x(d)}" x2="${x(d)}" y1="${T - 4}" y2="${H - B}" stroke="#1d2229"/><text x="${x(d)}" y="${T - 10}" text-anchor="middle">${fmtS(d)}</text>`;
+  }
+  rows.forEach((o, i) => {
+    const y = T + i * rh;
+    if (!o) { s += `<line x1="0" x2="${W}" y1="${y + rh / 2}" y2="${y + rh / 2}" stroke="#e9ecef" stroke-width="1"/>`; return; }
+    s += `<text class="lab" x="${L - 8}" y="${y + rh / 2 + 4}" text-anchor="end">${esc(o.r.name)}</text>`;
+    o.r.parts.forEach((pt, p) => {
+      const a = o.r.dates[p], e = o.r.dates[p + 1], bh = Math.max(4, rh * 0.62), by = y + (rh - bh) / 2;
+      const tip = `${o.r.name} · ${tm(PHASES[p])}\n${fmt(a)} → ${fmt(e)} (${e - a} ${DU()})\n${o.r.src[p + 1] === "obs" ? t("observed") : t("{s} forecast", { s: SRCL[o.r.src[p + 1]] })}`;
+      if (pt.obs > 0) s += `<rect x="${x(a)}" y="${by}" width="${Math.max(0, x(a + pt.obs) - x(a) - 1)}" height="${bh}" fill="${PHX[p]}" ${tipAttr(tip)}/>`;
+      if (pt.fc > 0) s += `<rect x="${x(a + pt.obs)}" y="${by}" width="${Math.max(0, x(e) - x(a + pt.obs) - 1)}" height="${bh}" fill="url(#${id}h${p})" stroke="${PHX[p]}" stroke-width="1" ${tipAttr(tip)}/>`;
+    });
+  });
+  s += `<line x1="${x(R.ref)}" x2="${x(R.ref)}" y1="${T - 4}" y2="${H - B}" stroke="#e9ecef" stroke-dasharray="3 3"/><text x="${x(R.ref) + 5}" y="${T + 6}" style="fill:#e9ecef">${t("Today")}</text>`;
+  return s;
+}
+TABLES.gantt = () => [t("Production timeline (macro milestones)"), ["boosters", "ships"].map(k => `<h3 style="margin:8px 0">${t(k === "ships" ? "Ships" : "Boosters")}</h3>` + tbl(
+  [t("Unit"), t("Last milestone"), ...MACRO.map(tm), t("Total (d)")],
+  R[k].rows.filter(r => r.started).map(r => [r.name, tm(r.status), ...r.dates.map((d, j) => ({ v: fmt(d), c: SRC[r.src[j]] })), { v: r.total, c: r.launched ? "obs" : "est", n: 1 }]))).join("")];
+
+// phase durations, stacked columns
+function drawPhases(K) {
+  return (W, H, id) => {
+    const rows = R[K].rows.filter(r => r.started); if (!rows.length) return "";
+    const L = 40, T = 10, B = 26, max = niceMax(Math.max(...rows.map(r => r.total))), bw = (W - L) / rows.length;
+    const y = v => T + (H - T - B) * (1 - v / max);
+    let s = defs(id) + yAxis(L, W, y, max);
+    rows.forEach((r, i) => {
+      let acc = 0; const x0 = L + i * bw + bw * 0.18, w = bw * 0.64;
+      r.parts.forEach((pt, p) => {
+        const tip = `${r.name} · ${tm(PHASES[p])}: ${r.retained[p]} ${DU()} (${r.src[p + 1] === "obs" ? t("observed") : t("{s} forecast", { s: SRCL[r.src[p + 1]] })})`;
+        if (pt.obs > 0) s += `<rect x="${x0}" y="${y(acc + pt.obs) + 1}" width="${w}" height="${Math.max(0, y(acc) - y(acc + pt.obs) - 1)}" fill="${PHX[p]}" ${tipAttr(tip)}/>`;
+        acc += pt.obs;
+        if (pt.fc > 0) s += `<rect x="${x0}" y="${y(acc + pt.fc) + 1}" width="${w}" height="${Math.max(0, y(acc) - y(acc + pt.fc) - 1)}" fill="url(#${id}h${p})" stroke="${PHX[p]}" ${tipAttr(tip)}/>`;
+        acc += pt.fc;
+      });
+      s += `<text x="${x0 + w / 2}" y="${H - 8}" text-anchor="middle" class="lab">${esc(r.name)}</text>`;
+    });
+    return s;
+  };
+}
+const phaseTable = K => [`${K}: phase durations (days)`, tbl(["Unit", ...PHASES.flatMap(p => [`${p} · manual`, "estimate", "retained"]), "Total"],
+  R[K].rows.filter(r => r.started).map(r => [r.name, ...[0, 1, 2, 3].flatMap(p => [{ v: r.manual[p] ?? "", c: "man", n: 1 }, { v: r0(r.phaseEst[p]), c: "est", n: 1 }, { v: r.retained[p], c: SRC[r.src[p + 1]], n: 1 }]), { v: r.total, n: 1 }]))];
+
+// generic line chart over units
+function lineChart(W, H, units, series, opts = {}) {
+  const L = 40, T = 12, B = 26, n = units.length; if (!n) return "";
+  const vals = series.flatMap(s => s.v.filter(v => v != null));
+  const max = niceMax(Math.max(10, ...vals)); const x = i => L + (W - L - 12) * (n === 1 ? 0.5 : i / (n - 1)), y = v => T + (H - T - B) * (1 - Math.max(0, v) / max);
+  let s = yAxis(L, W - 12, y, max);
+  const skip = W < 520 ? 2 : 1;
+  units.forEach((u, i) => { if (i % skip === 0) s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" class="lab">${esc(u)}</text>`; });
+  series.forEach(se => {
+    let d = "", pen = false;
+    se.v.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`; pen = true; });
+    if (se.line !== false && d) s += `<path d="${d}" fill="none" stroke="${se.c}" stroke-width="${se.w || 2}" ${se.dash ? 'stroke-dasharray="6 5"' : ""}/>`;
+    se.v.forEach((v, i) => { if (v == null) return;
+      const tip = `${units[i]} · ${se.name}: ${Math.round(v)} ${DU()}`;
+      s += se.dot ? `<circle cx="${x(i)}" cy="${y(v)}" r="${se.dot}" fill="${se.c}" stroke="#111419" stroke-width="2" ${tipAttr(tip)}/>`
+                  : `<circle cx="${x(i)}" cy="${y(v)}" r="9" fill="transparent" ${tipAttr(tip)}/>`; });
+  });
+  return s;
+}
+// cadence between consecutive units (macro milestones except stacking start)
+function cadenceSeries(K) {
+  const Kd = R[K], rows = Kd.rows.filter(r => r.started), idx = rows.map(r => r.i);
+  const cols = [["Stacking End", 1, "var(--p0)", 2], ["First Cryo", 2, "var(--p1)", 2], ["First static", 3, "var(--p2)", 2], ["Launch", 4, "#ffffff", 3.5]];
+  const out = [];
+  cols.forEach(([m, j, c, w]) => {
+    const k = Kd.allMs.indexOf(m);
+    const ob = idx.map(i => Kd.gapsObs[i][k]);
+    const fc = idx.map((i, n) => { const g = Kd.gapsFc[i][j]; if (g == null) return null; const o = ob[n] != null, nxt = n + 1 < idx.length && ob[n + 1] != null; return o && nxt ? null : g; });
+    out.push({ name: tm(m), v: ob, c, w, dot: w > 3 ? 4.5 : 3.5 }, { name: tm(m) + " · " + t("Forecast").toLowerCase(), v: fc, c, w, dash: 1 });
+  });
+  return { units: rows.map(r => r.name), out };
+}
+const cadLegend = () => `<div class="legend"><span><i class="line" style="border-color:var(--p0)"></i>${tm("Stacking End")}</span><span><i class="line" style="border-color:var(--p1)"></i>${tm("First Cryo")}</span><span><i class="line" style="border-color:var(--p2)"></i>${tm("First static")}</span><span><i class="line" style="border-color:#fff;border-top-width:3px"></i>${tm("Launch")}</span><span><i class="line" style="border-color:var(--mute);border-top-style:dashed"></i>${t("Forecast")}</span></div>`;
+const KL = K => t(K === "ships" ? "Ships" : "Boosters");
+const cadTable = K => [t("{k}: days since the previous unit reached the same milestone (observed)", { k: KL(K) }), tbl([t("Unit"), ...R[K].allMs.map(tm)], R[K].rows.map((r, i) => [r.name, ...R[K].gapsObs[i].map(v => ({ v: v ?? "", n: 1, c: v != null && v < 0 ? "bad" : "" }))]))];
+// learning curves
+const learnTable = (K, p) => {
+  const Kd = R[K]; let prev = null;
+  return [t("{k}: {p}, learning curve", { k: KL(K), p: tm(PHASES[p]) }), tbl([t("Unit"), t("Observed duration (d)"), t("Estimate (d)"), t("Ratio observed"), t("Ratio used")],
+    Kd.rows.filter(r => r.started).map(r => { const e = Kd.phaseEst[p][r.i], o = Kd.phaseObs[r.i][p];
+      const ro = o != null && prev != null ? (Math.max(o, 1) / Math.max(prev, 1)).toFixed(2) : ""; if (o != null) prev = o;
+      return [r.name, { v: o ?? "", n: 1 }, { v: e ? e.est.toFixed(1) : "", n: 1, c: "est" }, { v: ro, n: 1 }, { v: e ? e.used.toFixed(2) : "", n: 1 }]; }))
+    + `<p class="note">${t("learn.note")}</p>`];
+};
+// ---------- tables
+function tbl(head, rows) {
+  return `<div class="scroll"><table><thead><tr>${head.map((h, i) => `<th class="${i ? "n" : ""}">${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c, i) => {
+    const o = typeof c === "object" && c !== null ? c : { v: c }; return `<td class="${o.c || ""} ${o.n || (i && /^\d{2} \w{3} \d{4}$/.test(String(o.v))) ? "n" : ""}">${esc(o.v)}</td>`; }).join("")}</tr>`).join("")}</tbody></table></div>`;
+}
+
+// ---------- views
+function nextFlight() { const f = R.flights.filter(f => f.status === "Forecast").sort((a, b) => a.date - b.date)[0]; return f; }
+function upTable(list) {
+  return tbl([t("In (d)"), t("Date"), t("Unit"), t("Milestone")], list.map(u => {
+    const fl = u.kind === "Flight";
+    return [{ v: u.date - R.ref, n: 1 }, { v: fmt(u.date), c: SRC[u.src] }, { v: fl ? tn(u.unit) : u.unit, c: fl ? "flt" : "" }, { v: tm(u.milestone), c: fl ? "flt" : "" }];
+  }));
+}
+function vHome() {
+  const f = nextFlight(), last = R.flights.filter(f => f.status === "Flown").sort((a, b) => b.date - a.date)[0];
+  const st = k => R[k].rows.filter(r => r.started && !r.launched).length;
+  const gap = R.ships.colStats(R.ships.gapsObs, R.ships.allMs.length - 1).med;
+  const H = (R.ships.rows.filter(r => r.started).length + R.boosters.rows.filter(r => r.started).length + 1) * 26 + 44;
+  const up = R.upcoming;
+  TABLES.upcoming = () => [t("Upcoming milestones"), tbl([t("In (days)"), t("Date"), t("Unit"), t("Milestone"), t("Source")], up.map(u => [{ v: u.date - R.ref, n: 1 }, { v: fmt(u.date), c: SRC[u.src] }, { v: u.kind === "Flight" ? tn(u.unit) : u.unit, c: u.kind === "Flight" ? "flt" : "" }, { v: tm(u.milestone), c: u.kind === "Flight" ? "flt" : "" }, { v: SRCL[u.src], c: SRC[u.src] }]))];
+  TABLES.flights = () => [t("Flights"), flightsTable()];
+  $("#v-home").innerHTML = `
+  <div class="hero"><div>
+    <div class="kicker">${t("Next flight · forecast")}</div>
+    ${f ? `<div class="count">T–${f.date - R.ref}<small>${t("days")}</small></div>
+    <div class="hero-sub">${esc(tn(f.name))} · ${esc(f.booster)} + ${esc(f.ship)}</div>
+    <div class="hero-meta">${t("Around {d}.", { d: `<b class="${SRC[f.src]}">${fmt(f.date)}</b>` })} ${t("Waiting on the {w}", { w: esc(t((f.waiting || "").toLowerCase())) })}${f.margin ? " " + t("({m} days behind its partner)", { m: f.margin }) : ""}.</div>` : `<div class="hero-sub">${t("No forecast available")}</div>`}
+  </div><div>${fig("fTimeline", 190, drawTimeline)}</div></div>
+  <div class="grid g4 tiles" style="padding:28px 0">
+    <div class="t"><div class="v">${last ? esc(tn(last.name)) : "—"}</div><div class="k">${t("Last flight")}${last ? ", " + fmt(last.date) : ""}</div></div>
+    <div class="t"><div class="v">${st("boosters")}</div><div class="k">${t("Boosters in production")}</div></div>
+    <div class="t"><div class="v">${st("ships")}</div><div class="k">${t("Ships in production")}</div></div>
+    <div class="t"><div class="v">${gap != null ? Math.round(gap) + " " + DU() : "—"}</div><div class="k">${t("Median gap between launches")}</div></div>
+  </div>
+  ${card("gantt", t("Production timeline"), t("Boosters above the line, ships below. Stacking start to launch ready."), fig("fGantt", H, drawGantt), phaseLegend())}
+  <div class="grid g2" style="margin-top:20px;align-items:start">
+    ${card("flights", t("Flights"), t("Launch = the later of its ship and booster being ready."), tbl([t("Flight"), t("Booster + ship"), tm("Launch"), t("Waiting on")], R.flights.map(f => [{ v: f.name, c: "flt" }, `${f.booster || "?"} + ${f.ship || "?"}`, { v: f.date != null ? fmt(f.date) : t(f.status), c: f.status === "Flown" ? "" : SRC[f.src] || "" }, f.status === "Flown" ? t("flown") : f.waiting ? `${t(f.waiting.toLowerCase())} +${f.margin} ${DU()}` : ""])))}
+    ${card("upcoming", t("Upcoming milestones"), t("Nearest first. <i>Launch ready</i>: the unit is ready to fly; <i>Launch</i>: the flight itself."), upTable(up.slice(0, 16)) + (up.length > 16 ? `<p class="note">${t("{n} more in the data table.", { n: up.length - 16 })}</p>` : ""))}
+  </div>
+  <div class="grid g2" style="align-items:start;margin-top:44px;padding-top:28px;border-top:1px solid var(--line)"><div class="prose">
+    <h2>${t("What it is")}</h2>
+    <p>${t("home.what")}</p>
+    <h3>${t("How the forecast works")}</h3>
+    <ul><li>${t("home.b1")}</li><li>${t("home.b2")}</li><li>${t("home.b3", { n: R.settings.nPoints })}</li><li>${t("home.b4")}</li></ul>
+    <p class="note">${t("home.n1")}</p>
+  </div><div class="prose">
+    <h2>${t("How to read it")}</h2>
+    <p>${t("home.r1")}</p><p>${t("home.r2")}</p><p>${t("home.r3")}</p>
+    <p class="note">${t("Dates of {d}: load a newer dates file in Settings when one is shared. Reference date: {r}.", { d: esc(updF(OFFICIAL)), r: fmt(R.ref) })}</p>
+  </div></div>`;
+}
+function drawTimeline(W, H) {
+  const fl = R.flights.filter(f => f.date != null); if (!fl.length) return "";
+  const lo = Math.min(...fl.map(f => f.date)) - 20, hi = Math.max(...fl.map(f => f.date)) + 20, x = d => 16 + ((d - lo) / (hi - lo)) * (W - 32), y = H / 2;
+  let s = `<line x1="8" x2="${W - 8}" y1="${y}" y2="${y}" stroke="#323944"/><line x1="${x(R.ref)}" x2="${x(R.ref)}" y1="${y - 40}" y2="${y + 40}" stroke="#e9ecef" stroke-dasharray="3 3"/><text x="${x(R.ref)}" y="${y + 56}" text-anchor="middle" style="fill:#e9ecef">${t("Today")}</text>`;
+  const nx = nextFlight();
+  fl.forEach((f, i) => {
+    const c = f.status === "Flown" ? "#e9ecef" : f.src === "manual" ? "#7fb2ff" : "#5fd3a0";
+    s += `<circle cx="${x(f.date)}" cy="${y}" r="${f === nx ? 8 : 6}" fill="${f.status === "Flown" ? c : "#0b0d10"}" stroke="${c}" stroke-width="2" ${tipAttr(`${tn(f.name)}: ${f.booster} + ${f.ship}\n${fmt(f.date)} · ${t(f.status)}`)}/>`;
+    s += `<text x="${x(f.date)}" y="${y - 16}" text-anchor="middle" class="lab">${(LANG === "fr" ? "V" : "F") + esc(f.name)}</text>`;
+  });
+  return s;
+}
+function flightsTable() {
+  return tbl([t("Flight"), t("Booster"), t("Ship"), t("Booster ready"), t("Ship ready"), tm("Launch"), t("Waiting on"), t("Margin")], R.flights.map(f => {
+    const c = f.status === "Flown" ? "" : SRC[f.src] || "";
+    return [{ v: f.name, c: "flt" }, f.booster, f.ship, { v: fmt(f.boosterReady), c }, { v: fmt(f.shipReady), c }, { v: f.date != null ? fmt(f.date) : t(f.status), c }, f.waiting ? t(f.waiting.toLowerCase()) : (f.status === "Flown" ? t("flown") : ""), { v: f.margin ?? "", n: 1 }];
+  }));
+}
+// learning curve: observed ●, estimate ○ (click = make manual), manual ▲ (drag / double-click to remove)
+const LSC = {};
+function drawLearn(K, p) {
+  return (W, H, id) => {
+    const Kd = R[K], rows = Kd.rows.filter(r => r.started), n = rows.length; if (!n) return "";
+    const ob = rows.map(r => Kd.phaseObs[r.i][p]), est = rows.map(r => Kd.phaseEst[p][r.i]?.est ?? null), man = rows.map(r => r.manual[p]);
+    const max = niceMax(Math.max(10, ...[...ob, ...est, ...man].filter(v => v != null)) * 1.25);
+    const L = 40, T = 12, B = 26, x = i => L + (W - L - 16) * (n === 1 ? 0.5 : i / (n - 1)), y = v => T + (H - T - B) * (1 - Math.max(0, v) / max);
+    LSC[id] = { T, B, H, max, K, p };
+    let s = yAxis(L, W - 16, y, max), d = "";
+    rows.forEach((r, i) => { if (i % (W < 520 ? 2 : 1) === 0) s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" class="lab">${esc(r.name)}</text>`; });
+    rows.forEach((r, i) => { if (ob[i] != null && est[i] != null) d += `${d && ob[i - 1] != null && est[i - 1] != null ? "L" : "M"}${x(i).toFixed(1)},${y(est[i]).toFixed(1)}`; });
+    if (d) s += `<path d="${d}" fill="none" stroke="#6b737d" stroke-width="1.5"/>`;
+    let lastObs = -1; ob.forEach((v, i) => { if (v != null) lastObs = i; });
+    let fd = ""; for (let i = Math.max(0, lastObs); i < n; i++) { if (est[i] == null || (i < lastObs)) continue; if (i === lastObs && ob[i] != null && est[i] == null) continue; fd += `${fd ? "L" : "M"}${x(i).toFixed(1)},${y(est[i]).toFixed(1)}`; }
+    if (fd.includes("L")) s += `<path d="${fd}" fill="none" stroke="${PHX[p]}" stroke-width="1.5" stroke-dasharray="5 4" opacity=".8"/>`;
+    rows.forEach((r, i) => {
+      const cx = x(i), c = PHX[p];
+      if (ob[i] != null) { s += `<circle cx="${cx}" cy="${y(ob[i])}" r="5.5" fill="${c}" stroke="#111419" stroke-width="2" ${tipAttr(t("{u} · observed {v} {d}", { u: r.name, v: ob[i], d: DU() }))}/>`; return; }
+      if (est[i] != null) s += `<circle cx="${cx}" cy="${y(est[i])}" r="5.5" fill="#111419" stroke="${c}" stroke-width="2" ${man[i] != null ? 'opacity=".35"' : `data-mk="${K}|${p}|${r.i}" style="cursor:pointer"`} ${tipAttr(t("{u} · estimate {v} {d}", { u: r.name, v: Math.round(est[i]), d: DU() }) + (man[i] == null ? "\n" + t("Click to set a manual estimate") : ""))}/>`;
+      if (man[i] != null) { const yy = y(man[i]);
+        s += `<g data-drag="${K}|${p}|${r.i}" style="cursor:ns-resize;touch-action:none" ${tipAttr(t("{u} · manual {v} {d}", { u: r.name, v: man[i], d: DU() }) + "\n" + t("Drag to change · double-click to remove"))}><circle cx="${cx}" cy="${yy}" r="14" fill="transparent"/><polygon points="${cx},${yy - 7} ${cx + 7},${yy + 5} ${cx - 7},${yy + 5}" fill="${c}" stroke="#e9ecef" stroke-width="1.2"/></g>`; }
+    });
+    return s;
+  };
+}
+const learnLegend = p => `<div class="legend"><span><svg width="12" height="12" style="vertical-align:-1px;margin-right:6px"><circle cx="6" cy="6" r="4.5" fill="${PHX[p]}"/></svg>${t("Observed")}</span><span><svg width="12" height="12" style="vertical-align:-1px;margin-right:6px"><circle cx="6" cy="6" r="4.2" fill="none" stroke="${PHX[p]}" stroke-width="1.8"/></svg>${t("Estimate (click to set manually)")}</span><span><svg width="12" height="12" style="vertical-align:-1px;margin-right:6px"><polygon points="6,1 11,10 1,10" fill="${PHX[p]}"/></svg>${t("Manual (drag)")}</span><span><i class="line" style="border-color:#6b737d"></i>${t("Model on past units")}</span><span><i class="line" style="border-color:${PHX[p]};border-top-style:dashed"></i>${t("Model forecast")}</span></div>`;
+function manualTable(K) {
+  const Kd = R[K], rows = Kd.rows.filter(r => r.started);
+  const cell = (r, p) => {
+    const o = Kd.phaseObs[r.i][p]; if (o != null) return `<td class="obs">${o}</td>`;
+    const man = r.manual[p], v = man ?? (r.phaseEst[p] != null ? Math.round(r.phaseEst[p]) : ""), st = man != null ? "man" : "est", key = `data-k="${K}" data-i="${r.i}" data-p="${p}"`;
+    return `<td><span class="mc ${st}"><button class="mv" data-act="medit" ${key} title="${t("Click to type a manual value")}">${v}<small>${t(st === "man" ? "manual" : "estimated")}</small></button>${st === "man" ? `<button class="mx" data-act="mclear" ${key} title="${t("Back to the estimate")}" aria-label="${t("Back to the estimate")}">×</button>` : ""}</span></td>`;
+  };
+  return [t("{k}: manual estimates (days)", { k: KL(K) }), `<p class="note">${t("man.note")}</p>
+  <div class="scroll"><table><thead><tr><th>${t("Unit")}</th>${PHASES.map(p => `<th>${esc(tm(p))}</th>`).join("")}<th>${tm("Launch ready")}</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.name)}</td>${[0, 1, 2, 3].map(p => cell(r, p)).join("")}<td class="${SRC[r.src[4]]}">${fmt(r.dates[4])}</td></tr>`).join("")}</tbody></table></div>`];
+}
+function vKind(K) {
+  const lbl = KL(K);
+  const cad = cadenceSeries(K);
+  TABLES["man-" + K] = () => manualTable(K); TABLES["cad-" + K] = () => cadTable(K);
+  [0, 1, 2, 3].forEach(p => (TABLES[`lc-${K}-${p}`] = () => learnTable(K, p)));
+  $(`#v-${K}`).innerHTML = `<div class="card-h" style="margin-bottom:20px"><div><h2>${lbl}</h2><p>${t("Analyses and manual estimates of the {k} production line. Right-click a chart for its numbers.", { k: LANG === "fr" ? lbl.toLowerCase() : K })}</p></div></div>
+  <div class="grid">
+  ${card("man-" + K, t("Phase durations per unit"), t("How long each macro phase took, or is expected to take."), fig("fPh" + K, 300, drawPhases(K)), phaseLegend(), t("Manual estimates"))}
+  ${card("cad-" + K, t("Cadence between consecutive units"), t("Days since the previous unit reached the same milestone. Converging lines mean a balanced line; launch in bold."), fig("fCad" + K, 380, (W, H) => lineChart(W, H, cad.units, cad.out)), cadLegend())}
+  <div><h3 style="margin:12px 0">${t("Learning curves")}</h3><p class="note" style="margin:0 0 12px">${t("Click a hollow estimate to turn it into a manual estimate (triangle), drag the triangle to change it, double-click it to remove it.")}</p>
+  <div class="grid g2">${[0, 1, 2, 3].map(p => card(`lc-${K}-${p}`, tm(PHASES[p]), "", fig(`fLc${K}${p}`, 240, drawLearn(K, p)), learnLegend(p))).join("")}</div></div>
+  </div>`;
+}
+function dateInput(v, attrs, label) { return `<input type="date" value="${esc(v || "")}" class="${v ? "" : "empty"}" ${attrs} aria-label="${esc(label)}">`; }
+function unitTable(K) {
+  const kind = K === "ships" ? "ship" : "booster", lbl = KL(K);
+  const msl = data.milestones[kind], Kd = R[K];
+  const rows = data[K].map((u, i) => {
+    const r = Kd.rows[i];
+    const cells = msl.map((m, k) => {
+      const v = u.dates[m] || "", d = toDay(v);
+      const prev = msl.slice(1, Math.max(1, k)).map(mm => toDay(u.dates[mm])).filter(x => x != null);
+      const bad = k > 1 && d != null && prev.length && d < Math.max(...prev);
+      return `<td>${dateInput(v, `data-k="${K}" data-i="${i}" data-m="${esc(m)}"${bad ? ' data-bad="1"' : ""}`, u.name + " " + m).replace('class="', bad ? 'class="bad ' : 'class="')}</td>`; }).join("");
+    return `<tr><td><input class="nm" value="${esc(u.name)}" data-k="${K}" data-i="${i}" data-f="name" aria-label="Name"></td>${cells}<td>${esc(tm(r?.status || ""))}</td><td><button class="tbtn" data-act="del" data-k="${K}" data-i="${i}">${t("Remove")}</button></td></tr>`;
+  }).join("");
+  return `<div class="card" style="margin-bottom:20px"><div class="card-h"><h3>${lbl}</h3><button class="btn" data-act="add" data-k="${K}">${t(K === "ships" ? "Add ship" : "Add booster")}</button></div>
+  <div class="scroll"><table class="edit"><thead><tr><th>${t(K === "ships" ? "Ship" : "Booster")}</th>${msl.map(m => `<th>${esc(tm(m))}</th>`).join("")}<th>${t("Last milestone")}</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+function vObserved() {
+  $("#v-observed").innerHTML = `<div class="card-h" style="margin-bottom:16px"><div><h2>${t("Observed milestones")}</h2><p>${t("Dates actually observed for each milestone. Red: date earlier than a previous milestone. Manual estimates are set in the Ships and Boosters tabs.")}</p></div></div>
+  ${unitTable("boosters")}${unitTable("ships")}`;
+}
+function vSetup() {
+  const s = data.settings || (data.settings = {});
+  const opt = (list, v) => `<option value=""></option>` + list.map(u => `<option ${u.name === v ? "selected" : ""}>${esc(u.name)}</option>`).join("");
+  $("#v-setup").innerHTML = `<div class="card-h" style="margin-bottom:16px"><div><h2>${t("Settings")}</h2><p>${t("Your modifications, model parameters and flight pairings.")}</p></div></div>
+  <div class="card" style="margin-bottom:20px"><h3 style="margin-bottom:10px">${t("Language")}</h3>
+    <select id="sLang" aria-label="${t("Language")}"><option value="en" ${LANG === "en" ? "selected" : ""}>English</option><option value="fr" ${LANG === "fr" ? "selected" : ""}>Français</option></select></div>
+  <div class="card" id="mods" style="margin-bottom:20px"><h3 style="margin-bottom:10px">${t("Modifications")}</h3>
+    <p style="margin:0 0 4px">${t("Linked dates file:")} <b>${esc(store.get(NKEY) || t("built into the page"))}</b> <span class="note">· ${t("dates of {d}", { d: esc(updF(OFFICIAL)) })}</span></p>
+    <p class="note" style="margin-top:0">${isDirty() ? t("Your modifications apply on top of this file. They are saved automatically, but only in this browser.") : t("No modifications.")}</p>
+    <div class="row"><button class="btn" data-act="save">${t("Download modifications")}</button><button class="btn ghost" data-act="open">${t("Load dates")}</button><button class="btn ghost" data-act="copy">${t("Copy as text")}</button><button class="btn ghost" data-act="reset">${t("Discard modifications")}</button></div>
+    <ul class="note" style="margin:12px 0 0;padding-left:18px"><li>${t("set.l1")}</li><li>${t("set.l2")}</li><li>${t("set.l3")}</li></ul></div>
+  <div class="card"><h3 style="margin-bottom:14px">${t("Model")}</h3><div class="grid g4" style="align-items:end">
+    <label class="f">${t("Reference date (empty = today)")}${dateInput(s.refDate, 'id="sRef"', t("Reference date (empty = today)"))}</label>
+    <label class="f">${t("Points used for each estimate (N)")}<input type="number" id="sN" min="1" max="10" step="1" value="${esc(s.nPoints ?? 4)}"></label>
+    <label class="f">${t("Minimum ratio per unit (0.5 to 1)")}<input type="number" id="sRm" min="0.5" max="1" step="0.01" value="${esc(s.ratioMin ?? 0.85)}"></label>
+  </div></div>
+  <div class="card" style="margin-top:20px"><div class="card-h"><div><h3>${t("Flights")}</h3><p>${t("Which booster flies with which ship.")}</p></div><button class="btn" data-act="addf">${t("Add flight")}</button></div>
+  <div class="scroll"><table class="edit"><thead><tr><th>${t("Flight")}</th><th>${t("Booster")}</th><th>${t("Ship")}</th><th>${tm("Launch")}</th><th></th></tr></thead><tbody>
+  ${data.flights.map((f, i) => `<tr><td class="flt">${FIRST_FLIGHT + i}</td><td><select data-fl="${i}" data-f="booster" aria-label="${t("Booster")}">${opt(data.boosters, f.booster)}</select></td><td><select data-fl="${i}" data-f="ship" aria-label="${t("Ship")}">${opt(data.ships, f.ship)}</select></td><td class="${SRC[R.flights[i]?.src] || ""}">${R.flights[i]?.date != null ? fmt(R.flights[i].date) : esc(t(R.flights[i]?.status || ""))}</td><td><button class="tbtn" data-act="delf" data-i="${i}">${t("Remove")}</button></td></tr>`).join("")}
+  </tbody></table></div></div>`;
+}
+
+// ---------- events
+let modalId = null;
+function setManual(K, i, p, v) { const u = data[K][i]; u.manual = u.manual || {}; u.manual[PHASES[p]] = v == null ? null : Math.max(0, Math.round(v)); changed(); }
+document.addEventListener("change", e => {
+  const t = e.target, ds = t.dataset;
+  if (ds.cancel) return;
+  if (t.type === "date") t.classList.toggle("empty", !t.value);
+  if (ds.m) { const u = data[ds.k][+ds.i]; u.dates[ds.m] = t.value || null; changed(); }
+  else if (ds.p != null && ds.k) setManual(ds.k, +ds.i, +ds.p, t.value === "" ? null : +t.value);
+  else if (ds.f === "name" && ds.k) { const old = data[ds.k][+ds.i].name, nw = t.value.trim() || old; data[ds.k][+ds.i].name = nw; data.flights.forEach(f => { if (f.ship === old) f.ship = nw; if (f.booster === old) f.booster = nw; }); changed(); }
+  else if (ds.fl != null) { data.flights[+ds.fl][ds.f] = t.value || null; changed(); }
+  else if (t.id === "sRef") { data.settings.refDate = t.value || null; changed(); }
+  else if (t.id === "sN") { data.settings.nPoints = Math.min(10, Math.max(1, Math.round(+t.value || 4))); changed(); }
+  else if (t.id === "sLang") { LANG = t.value === "fr" ? "fr" : "en"; store.set(LKEY, LANG); recompute(); }
+  else if (t.id === "sRm") { data.settings.ratioMin = Math.min(1, Math.max(0.5, +t.value || 0.85)); changed(); }
+});
+document.addEventListener("click", async e => {
+  const mk = e.target.closest("[data-mk]");
+  if (mk) { const [K, p, i] = mk.dataset.mk.split("|"), est = R[K].phaseEst[+p][+i]?.est; if (est != null) setManual(K, +i, +p, est); return; }
+  const b = e.target.closest("[data-act]"); if (!b) { $("#menu").style.display = "none"; return; }
+  const a = b.dataset.act;
+  if (a === "table") { openTable(b.dataset.id || $("#menu").dataset.id); $("#menu").style.display = "none"; }
+  else if (a === "medit") { const span = b.closest(".mc"), v = b.firstChild.textContent.trim();
+    span.outerHTML = `<input type="number" min="0" step="1" class="minp" value="${esc(v)}" data-k="${b.dataset.k}" data-i="${b.dataset.i}" data-p="${b.dataset.p}" aria-label="Manual duration">`;
+    const inp = document.querySelector("#mb .minp"); inp.focus(); inp.select(); }
+  else if (a === "mclear") setManual(b.dataset.k, +b.dataset.i, +b.dataset.p, null);
+  else if (a === "unman") { const [K, p, i] = $("#menu").dataset.drag.split("|"); $("#menu").style.display = "none"; setManual(K, +i, +p, null); }
+  else if (a === "close") { $("#modal").classList.remove("on"); modalId = null; }
+  else if (a === "add") { const K = b.dataset.k, kind = K === "ships" ? "ship" : "booster", list = data[K];
+    const lastN = list.length ? list[list.length - 1].name : (K === "ships" ? "S0" : "B0"), m = /^(\D*)(\d+)$/.exec(lastN);
+    list.push({ name: m ? m[1] + (+m[2] + 1) : lastN + "+", dates: Object.fromEntries(data.milestones[kind].map(x => [x, null])), manual: Object.fromEntries(PHASES.map(p => [p, null])) }); changed(); }
+  else if (a === "del") { if (b.dataset.armed) { data[b.dataset.k].splice(+b.dataset.i, 1); changed(); } else { b.dataset.armed = 1; b.textContent = t("Confirm?"); } }
+  else if (a === "addf") { const n = data.flights.length ? data.flights[data.flights.length - 1].name : "Flight 0", m = /^(\D*)(\d+)$/.exec(n || ""); data.flights.push({ name: `Flight ${FIRST_FLIGHT + data.flights.length}`, ship: null, booster: null }); changed(); }
+  else if (a === "delf") { if (b.dataset.armed) { data.flights.splice(+b.dataset.i, 1); changed(); } else { b.dataset.armed = 1; b.textContent = t("Confirm?"); } }
+  else if (a === "reset") { data = structuredClone(OFFICIAL); store.del(DKEY); recompute(); toast(t("Modifications discarded.")); }
+  else if (a === "open") openJSON(b);
+  else if (a === "save") saveJSON();
+  else if (a === "copy") { try { await navigator.clipboard.writeText(JSON.stringify(data, null, 1)); toast(t("Modifications copied to the clipboard.")); } catch (err) { showJSON(); } }
+});
+// drag manual triangles
+let drag = null;
+document.addEventListener("pointerdown", e => {
+  const g = e.target.closest("[data-drag]"); if (!g || e.button !== 0) return;
+  const svg = g.closest("svg"), id = g.closest(".fig").id, sc = LSC[id]; if (!sc) return;
+  e.preventDefault(); svg.setPointerCapture(e.pointerId);
+  drag = { g, svg, sc, y0: e.clientY, moved: false, val: null, key: g.dataset.drag };
+});
+document.addEventListener("pointermove", e => {
+  if (!drag) return;
+  const { sc, svg, g } = drag, rc = svg.getBoundingClientRect(), yy = Math.min(sc.H - sc.B, Math.max(sc.T, e.clientY - rc.top));
+  const v = Math.round(sc.max * (1 - (yy - sc.T) / (sc.H - sc.T - sc.B)));
+  if (Math.abs(e.clientY - drag.y0) > 2) drag.moved = true;
+  drag.val = v; g.setAttribute("transform", `translate(0 ${e.clientY - drag.y0})`);
+  tip.textContent = `${v} ${DU()}`; tip.style.display = "block"; tip.style.left = e.clientX + 14 + "px"; tip.style.top = e.clientY + 14 + "px";
+});
+document.addEventListener("pointerup", () => {
+  if (!drag) return; const d = drag; drag = null; tip.style.display = "none";
+  const [K, p, i] = d.key.split("|");
+  if (d.moved && d.val != null) { setManual(K, +i, +p, d.val); lastTap = null; return; }
+  d.g.removeAttribute("transform");
+  const now = Date.now();
+  if (lastTap && lastTap.key === d.key && now - lastTap.t < 400) { lastTap = null; setManual(K, +i, +p, null); }
+  else lastTap = { key: d.key, t: now };
+});
+let lastTap = null;
+function openTable(id) { const f = TABLES[id]; if (!f) return; modalId = id; const [t, html] = f(); $("#mt").textContent = t; $("#mb").innerHTML = html; $("#modal").classList.add("on"); }
+document.addEventListener("contextmenu", e => {
+  const m = $("#menu"), g = e.target.closest("[data-drag]");
+  const c = e.target.closest(".card[data-table]"); if (!c || !e.target.closest(".fig")) return;
+  e.preventDefault(); m.dataset.id = c.dataset.table; m.dataset.drag = g ? g.dataset.drag : "";
+  m.innerHTML = (g ? `<button data-act="unman">${t("Remove manual estimate")}</button>` : "") + `<button data-act="table">${t(c.dataset.table.startsWith("man-") ? "Manual estimates" : "View data table")}</button>`;
+  m.style.display = "block"; m.style.left = Math.min(e.clientX, innerWidth - 220) + "px"; m.style.top = Math.min(e.clientY, innerHeight - 100) + "px";
+});
+document.addEventListener("keydown", e => {
+  const t = e.target; if (!t.classList?.contains("minp")) return;
+  if (e.key === "Enter") { e.preventDefault(); t.blur(); }
+  if (e.key === "Escape") { e.stopPropagation(); e.preventDefault(); t.dataset.cancel = 1; t.blur(); openTable(modalId); }
+}, true);
+document.addEventListener("focusout", e => { const t = e.target; if (t.classList?.contains("minp") && !t.dataset.cancel) setTimeout(() => { if (document.contains(t)) openTable(modalId); }, 0); });
+addEventListener("keydown", e => { if (e.key === "Escape") { $("#modal").classList.remove("on"); modalId = null; $("#menu").style.display = "none"; } });
+$("#modal").addEventListener("click", e => { if (e.target.id === "modal") { $("#modal").classList.remove("on"); modalId = null; } });
+const tip = $("#tip");
+document.addEventListener("mousemove", e => {
+  if (drag) return;
+  const t = e.target.closest("[data-tip]"); if (!t) { tip.style.display = "none"; return; }
+  tip.textContent = t.getAttribute("data-tip"); tip.style.display = "block";
+  tip.style.left = Math.min(e.clientX + 14, innerWidth - 310) + "px"; tip.style.top = (e.clientY + 14) + "px";
+});
+
+// ---------- file I/O
+function validData(d) { return d && Array.isArray(d.ships) && Array.isArray(d.boosters) && d.milestones?.ship && d.milestones?.booster; }
+function loadText(txt, name) {
+  let d; try { d = JSON.parse(txt); } catch (err) { toast(t("This file is not valid JSON.")); return; }
+  if (!validData(d)) { toast(t("This JSON does not look like tracker data.")); return; }
+  d.flights = d.flights || []; d.settings = d.settings || {};
+  setOfficial(d, name); toast(t("Loaded {f}: dates of {d}.", { f: name || "file", d: updF(d) }));
+}
+function setOfficial(d, name) { OFFICIAL = d; store.set(BKEY, JSON.stringify(d)); if (name) store.set(NKEY, name); else store.del(NKEY); data = structuredClone(d); store.del(DKEY); recompute(); }
+function openJSON(btn) {
+  if (isDirty() && btn && !btn.dataset.armed) { btn.dataset.armed = 1; btn.textContent = t("Discard modifications and load?"); return; }
+  $("#file").click();
+}
+$("#file").addEventListener("change", async e => { const f = e.target.files[0]; if (f) loadText(await f.text(), f.name); e.target.value = ""; });
+document.addEventListener("dragover", e => e.preventDefault());
+document.addEventListener("drop", async e => { const f = e.dataTransfer?.files?.[0]; if (!f) return; e.preventDefault(); loadText(await f.text(), f.name); });
+async function saveJSON() {
+  const out = Object.assign({}, data, { meta: Object.assign({}, data.meta, { updated: new Date().toISOString().slice(0, 10) }) });
+  try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 1)], { type: "application/json" })); a.download = "data.json"; document.body.appendChild(a); a.click(); a.remove(); } catch (err) {}
+  toast(t("data.json downloaded. If nothing happened, use Copy as text."));
+}
+function showJSON() { modalId = null; $("#mt").textContent = t("Modifications (JSON)"); $("#mb").innerHTML = `<p class="note">${t("If no download started, copy this text into a file named data.json.")}</p><textarea readonly>${esc(JSON.stringify(data, null, 1))}</textarea><div class="row" style="margin-top:10px"><button class="btn" data-act="copy">${t("Copy as text")}</button></div>`; $("#modal").classList.add("on"); }
+
+// hosted: prefer a data.json next to the page
+(async () => {
+  if (/^https?:/.test(location.protocol)) {
+    try { const r = await fetch("data.json", { cache: "no-store" }); if (r.ok) { const d = await r.json(); if (validData(d) && upd(d) > upd(OFFICIAL)) { const wasClean = !isDirty(); OFFICIAL = d; store.set(BKEY, JSON.stringify(d)); store.set(NKEY, "data.json (website)"); if (wasClean) data = structuredClone(d); } } } catch (err) {}
+  }
+  recompute();
+})();
+}
+</script>
+</body>
+</html>

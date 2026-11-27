@@ -1,0 +1,538 @@
+{
+ "meta": {
+  "title": "Starship Production Tracker",
+  "updated": "2026-11-27",
+  "source": "SpaceX Fandom wiki (community data)",
+  "schema": 1
+ },
+ "settings": {
+  "refDate": null,
+  "nPoints": 4,
+  "ratioMin": 0.85
+ },
+ "milestones": {
+  "ship": [
+   "Spotted",
+   "Stacking Start",
+   "Stacking End",
+   "Aft flap installed",
+   "Massey Rollout",
+   "First Cryo",
+   "Last Cryo",
+   "First static",
+   "Last static",
+   "Launch"
+  ],
+  "booster": [
+   "Spotted",
+   "Stacking Start",
+   "Stacking End",
+   "Massey Rollout",
+   "First Cryo",
+   "Last Cryo",
+   "First static",
+   "Last static",
+   "Launch"
+  ]
+ },
+ "ships": [
+  {
+   "name": "S39",
+   "dates": {
+    "Spotted": "2025-03-16",
+    "Stacking Start": "2025-08-16",
+    "Stacking End": "2025-11-15",
+    "Aft flap installed": "2026-01-20",
+    "Massey Rollout": "2026-02-26",
+    "First Cryo": "2026-03-01",
+    "Last Cryo": "2026-03-04",
+    "First static": "2026-04-11",
+    "Last static": "2026-05-15",
+    "Launch": "2026-05-22"
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "S40",
+   "dates": {
+    "Spotted": "2025-04-10",
+    "Stacking Start": "2025-11-12",
+    "Stacking End": "2026-03-02",
+    "Aft flap installed": "2026-04-12",
+    "Massey Rollout": "2026-05-02",
+    "First Cryo": "2026-05-03",
+    "Last Cryo": "2026-05-04",
+    "First static": "2026-06-24",
+    "Last static": "2026-07-01",
+    "Launch": "2026-07-24"
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "S41",
+   "dates": {
+    "Spotted": "2025-05-27",
+    "Stacking Start": "2026-03-16",
+    "Stacking End": "2026-05-20",
+    "Aft flap installed": "2026-05-29",
+    "Massey Rollout": "2026-06-28",
+    "First Cryo": "2026-06-29",
+    "Last Cryo": "2026-07-03",
+    "First static": "2026-08-19",
+    "Last static": "2026-08-20",
+    "Launch": "2026-09-28"
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "S42",
+   "dates": {
+    "Spotted": "2025-05-27",
+    "Stacking Start": "2026-06-09",
+    "Stacking End": "2026-07-24",
+    "Aft flap installed": "2026-09-02",
+    "Massey Rollout": "2026-09-02",
+    "First Cryo": "2026-09-03",
+    "Last Cryo": "2026-10-09",
+    "First static": "2026-10-26",
+    "Last static": "2026-10-27",
+    "Launch": "2026-11-13"
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "S43",
+   "dates": {
+    "Spotted": "2025-06-19",
+    "Stacking Start": "2026-07-14",
+    "Stacking End": "2026-09-15",
+    "Aft flap installed": "2026-09-27",
+    "Massey Rollout": "2026-10-22",
+    "First Cryo": "2026-10-23",
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "S44",
+   "dates": {
+    "Spotted": "2025-08-01",
+    "Stacking Start": "2026-08-27",
+    "Stacking End": "2026-10-20",
+    "Aft flap installed": "2026-11-03",
+    "Massey Rollout": "2026-11-19",
+    "First Cryo": "2026-11-20",
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "S45",
+   "dates": {
+    "Spotted": "2025-08-25",
+    "Stacking Start": "2026-09-22",
+    "Stacking End": "2026-11-10",
+    "Aft flap installed": "2026-11-21",
+    "Massey Rollout": null,
+    "First Cryo": null,
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "S46",
+   "dates": {
+    "Spotted": "2025-08-25",
+    "Stacking Start": "2026-10-21",
+    "Stacking End": null,
+    "Aft flap installed": null,
+    "Massey Rollout": null,
+    "First Cryo": null,
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "S47",
+   "dates": {
+    "Spotted": "2025-08-25",
+    "Stacking Start": "2026-11-14",
+    "Stacking End": null,
+    "Aft flap installed": null,
+    "Massey Rollout": null,
+    "First Cryo": null,
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "S48",
+   "dates": {
+    "Spotted": "2026-04-11",
+    "Stacking Start": null,
+    "Stacking End": null,
+    "Aft flap installed": null,
+    "Massey Rollout": null,
+    "First Cryo": null,
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "S49",
+   "dates": {
+    "Spotted": "2026-04-28",
+    "Stacking Start": null,
+    "Stacking End": null,
+    "Aft flap installed": null,
+    "Massey Rollout": null,
+    "First Cryo": null,
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "S50",
+   "dates": {
+    "Spotted": "2026-10-23",
+    "Stacking Start": null,
+    "Stacking End": null,
+    "Aft flap installed": null,
+    "Massey Rollout": null,
+    "First Cryo": null,
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "S51",
+   "dates": {
+    "Spotted": "2026-10-23",
+    "Stacking Start": null,
+    "Stacking End": null,
+    "Aft flap installed": null,
+    "Massey Rollout": null,
+    "First Cryo": null,
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "S52",
+   "dates": {
+    "Spotted": "2026-10-23",
+    "Stacking Start": null,
+    "Stacking End": null,
+    "Aft flap installed": null,
+    "Massey Rollout": null,
+    "First Cryo": null,
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  }
+ ],
+ "boosters": [
+  {
+   "name": "B19",
+   "dates": {
+    "Spotted": "2025-07-16",
+    "Stacking Start": "2025-11-27",
+    "Stacking End": "2025-12-23",
+    "Massey Rollout": "2026-02-01",
+    "First Cryo": "2026-02-01",
+    "Last Cryo": "2026-02-07",
+    "First static": "2026-03-09",
+    "Last static": "2026-05-07",
+    "Launch": "2026-05-22"
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "B20",
+   "dates": {
+    "Spotted": "2026-02-05",
+    "Stacking Start": "2026-02-06",
+    "Stacking End": "2026-04-30",
+    "Massey Rollout": "2026-06-05",
+    "First Cryo": "2026-06-06",
+    "Last Cryo": "2026-06-07",
+    "First static": "2026-07-10",
+    "Last static": "2026-07-10",
+    "Launch": "2026-07-24"
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "B21",
+   "dates": {
+    "Spotted": "2025-11-22",
+    "Stacking Start": "2026-05-10",
+    "Stacking End": "2026-06-29",
+    "Massey Rollout": "2026-07-17",
+    "First Cryo": "2026-07-18",
+    "Last Cryo": "2026-07-20",
+    "First static": "2026-08-28",
+    "Last static": "2026-08-28",
+    "Launch": "2026-09-28"
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "B22",
+   "dates": {
+    "Spotted": "2026-06-29",
+    "Stacking Start": "2026-06-29",
+    "Stacking End": "2026-08-14",
+    "Massey Rollout": "2026-09-08",
+    "First Cryo": "2026-09-09",
+    "Last Cryo": "2026-09-10",
+    "First static": "2026-10-25",
+    "Last static": "2026-10-25",
+    "Launch": "2026-11-13"
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "B23",
+   "dates": {
+    "Spotted": "2026-08-14",
+    "Stacking Start": "2026-08-14",
+    "Stacking End": "2026-09-25",
+    "Massey Rollout": "2026-10-13",
+    "First Cryo": "2026-10-15",
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "B24",
+   "dates": {
+    "Spotted": "2026-09-25",
+    "Stacking Start": "2026-09-28",
+    "Stacking End": "2026-10-30",
+    "Massey Rollout": "2026-11-20",
+    "First Cryo": "2026-11-22",
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "B25",
+   "dates": {
+    "Spotted": "2026-11-02",
+    "Stacking Start": "2026-11-02",
+    "Stacking End": null,
+    "Massey Rollout": null,
+    "First Cryo": null,
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  },
+  {
+   "name": "B26",
+   "dates": {
+    "Spotted": null,
+    "Stacking Start": null,
+    "Stacking End": null,
+    "Massey Rollout": null,
+    "First Cryo": null,
+    "Last Cryo": null,
+    "First static": null,
+    "Last static": null,
+    "Launch": null
+   },
+   "manual": {
+    "Stacking": null,
+    "Stacking End → First Cryo": null,
+    "First Cryo → First static": null,
+    "First static → Launch": null
+   }
+  }
+ ],
+ "flights": [
+  {
+   "name": "Flight 12",
+   "ship": "S39",
+   "booster": "B19"
+  },
+  {
+   "name": "Flight 13",
+   "ship": "S40",
+   "booster": "B20"
+  },
+  {
+   "name": "Flight 14",
+   "ship": "S41",
+   "booster": "B21"
+  },
+  {
+   "name": "Flight 15",
+   "ship": "S42",
+   "booster": "B22"
+  },
+  {
+   "name": "Flight 16",
+   "ship": "S43",
+   "booster": "B23"
+  },
+  {
+   "name": "Flight 17",
+   "ship": "S44",
+   "booster": "B24"
+  },
+  {
+   "name": "Flight 18",
+   "ship": "S45",
+   "booster": "B25"
+  },
+  {
+   "name": "Flight 19",
+   "ship": "S46",
+   "booster": "B26"
+  }
+ ]
+}
