@@ -76,6 +76,7 @@ tbody td:first-child{white-space:normal;min-width:7em}
 .mx{background:none;border:1px solid var(--line2);color:var(--mute);width:24px;height:24px;line-height:20px;padding:0;cursor:pointer;font-size:15px}
 .mx:hover,.mx:focus-visible{color:var(--ink);border-color:var(--ink);outline:none}
 .minp{width:90px;text-align:center}
+input.mine{color:var(--man);font-weight:500}
 input[type=date].empty:not(:focus){color:transparent}
 input[type=date].empty:not(:focus)::-webkit-datetime-edit{color:transparent}
 .obs{color:var(--obs)}.man{color:var(--man);font-weight:500}.est{color:var(--est);font-style:italic}.bad{background:#3a1416;color:#ffb3b3}
@@ -108,7 +109,7 @@ textarea{width:100%;height:50vh;background:var(--panel2);color:var(--ink);border
 <a href="#home" data-i18n="Home">Home</a><a href="#boosters" data-i18n="Boosters">Boosters</a><a href="#ships" data-i18n="Ships">Ships</a>
 <span class="sep"></span><a href="#observed" data-i18n="Observed milestones">Observed milestones</a><a href="#setup" data-i18n="Settings">Settings</a>
 </nav></div></header>
-<a class="banner" id="banner" href="#setup"><span><b data-i18n="Sandbox mode.">Sandbox mode.</b> <span data-i18n="You have modifications that only exist in this browser. Click here to download or discard them.">You have modifications that only exist in this browser. Click here to download or discard them.</span></span><span class="cap" style="flex:none" data-i18n="Settings →">Settings →</span></a>
+<a class="banner" id="banner" href="#setup"><span><b data-i18n="Sandbox mode.">Sandbox mode.</b> <span data-i18n="You have personal modifications, kept in this browser only. Click here to download or discard them.">You have personal modifications, kept in this browser only. Click here to download or discard them.</span></span><span class="cap" style="flex:none" data-i18n="Settings →">Settings →</span></a>
 <main>
 <section class="view" id="v-home"></section>
 <section class="view" id="v-boosters"></section>
@@ -267,7 +268,7 @@ const DU = () => (LANG === "fr" ? "j" : "d");
 const FR = {
   // static shell
   "Home": "Accueil", "Ships": "Ships", "Boosters": "Boosters", "Observed milestones": "Jalons observés", "Settings": "Réglages",
-  "Sandbox mode.": "Mode bac à sable.", "You have modifications that only exist in this browser. Click here to download or discard them.": "Vous avez des modifications qui n'existent que dans ce navigateur. Cliquez ici pour les télécharger ou les annuler.",
+  "Sandbox mode.": "Mode bac à sable.", "You have personal modifications, kept in this browser only. Click here to download or discard them.": "Vous avez des modifications personnelles, gardées dans ce navigateur uniquement. Cliquez ici pour les télécharger ou les annuler.",
   "Settings →": "Réglages →", "Close": "Fermer",
   "Fan-made project, not affiliated with SpaceX. Dates from the SpaceX Fandom wiki (community data, CC BY-SA). Forecasts are statistical estimates, not announcements.": "Projet de fan, non affilié à SpaceX. Dates issues du wiki SpaceX Fandom (données communautaires, CC BY-SA). Les prévisions sont des estimations statistiques, pas des annonces.",
   "Dates of {d}.": "Dates du {d}.",
@@ -290,8 +291,8 @@ const FR = {
   "home.n1": "Seuls les engins dont le stacking a commencé ont une prévision : l'attente entre « repéré » et « début du stacking » est trop irrégulière pour être estimée.",
   "home.r1": "Couleurs des dates et des durées : <span class=\"obs\">observé</span>, <span class=\"man\">manuel</span>, <span class=\"est\">estimé</span>. Dans les graphiques, les marques pleines sont observées et les barres hachurées sont des prévisions. Sur les courbes d'apprentissage, les cercles creux sont des estimations et les triangles des estimations manuelles.",
   "home.r2": "<b>Clic droit sur un graphique</b> (ou son bouton) pour voir les chiffres qui sont derrière.",
-  "home.r3": "Tout est un bac à sable : modifiez une date observée, une estimation manuelle ou un réglage, et toutes les prévisions se mettent à jour en direct. Vos modifications restent dans votre navigateur ; les Réglages permettent de les télécharger ou de les annuler.",
-  "Dates of {d}: load a newer dates file in Settings when one is shared. Reference date: {r}.": "Dates du {d} : chargez un fichier de dates plus récent dans les Réglages quand il est partagé. Date de référence : {r}.",
+  "home.r3": "Vous pouvez ajouter vos propres estimations manuelles, dates observées, engins ou vols : toutes les prévisions se mettent à jour en direct. Vos modifications restent dans votre navigateur ; les Réglages permettent de les télécharger dans un fichier, de les recharger plus tard ou de les annuler.",
+  "Reference dates of {d}. Reference date for forecasts: {r}.": "Dates de référence du {d}. Date de référence des prévisions : {r}.",
   "Today": "Aujourd'hui", "Forecast (hatched)": "Prévision (hachuré)", "Data table": "Tableau de données",
   // flights
   "Booster": "Booster", "Ship": "Ship", "Booster ready": "Booster prêt", "Ship ready": "Ship prêt", "Margin": "Écart",
@@ -319,12 +320,19 @@ const FR = {
   "Add booster": "Ajouter un booster", "Add ship": "Ajouter un ship", "Remove": "Supprimer", "Confirm?": "Confirmer ?", "Name": "Nom",
   // settings
   "Your modifications, model parameters and flight pairings.": "Vos modifications, les paramètres du modèle et l'appariement des vols.",
-  "Language": "Langue", "Modifications": "Modifications", "Linked dates file:": "Fichier de dates lié :", "built into the page": "intégré à la page", "dates of {d}": "dates du {d}",
+  "Language": "Langue", "My modifications": "Mes modifications", "Reference:": "Référence :", "dates published on the site": "dates publiées sur le site", "copy built into the page": "copie intégrée à la page",
+  "Your modifications apply on top of the reference. They are saved automatically, but only in this browser.": "Vos modifications s'appliquent par-dessus la référence. Elles sont enregistrées automatiquement, mais uniquement dans ce navigateur.",
+  "Download my modifications": "Télécharger mes modifications", "Load my modifications": "Charger mes modifications", "Discard my modifications": "Annuler mes modifications",
+  "Replace my modifications?": "Remplacer mes modifications ?", "This is not a modifications file.": "Ce n'est pas un fichier de modifications.", "Loaded {f}.": "{f} chargé.",
+  "my-modifications.json": "mes-modifications.json", "{f} downloaded. If nothing happened, use Copy as text.": "{f} téléchargé. Si rien ne s'est passé, utilisez « Copier en texte ».",
+  "My modifications (JSON)": "Mes modifications (JSON)", "Copy this text into a file named {f}.": "Copiez ce texte dans un fichier nommé {f}.",
+  "obs.intro": "Les dates en blanc viennent de la référence et ne se modifient pas. Vous pouvez remplir les cases vides et ajouter des engins (en bleu) ; dès qu'une date apparaît dans la référence, c'est elle qui s'applique. En rouge : date antérieure à une étape précédente.",
+  "flights.note": "Les vols de la référence sont fixes ; vous pouvez ajouter les suivants.", "Modifications": "Modifications", "Linked dates file:": "Fichier de dates lié :", "built into the page": "intégré à la page", "dates of {d}": "dates du {d}",
   "Your modifications apply on top of this file. They are saved automatically, but only in this browser.": "Vos modifications s'appliquent par-dessus ce fichier. Elles sont enregistrées automatiquement, mais uniquement dans ce navigateur.", "No modifications.": "Aucune modification.",
   "Download modifications": "Télécharger les modifications", "Load dates": "Charger des dates", "Copy as text": "Copier en texte", "Discard modifications": "Annuler les modifications",
-  "set.l1": "<b>Télécharger les modifications</b> enregistre tout ce que vous voyez (dates observées, estimations manuelles, vols, réglages) dans un fichier, data.json.",
-  "set.l2": "<b>Charger des dates</b> charge un nouveau fichier de dates (data.json), par exemple le dernier partagé sur Discord. Il devient le fichier de dates lié et remplace vos modifications. La page s'en souvient : inutile de le recharger la prochaine fois.",
-  "set.l3": "<b>Annuler les modifications</b> efface vos modifications et revient au fichier de dates lié.",
+  "set.l1": "<b>Télécharger mes modifications</b> enregistre uniquement ce que vous avez changé (estimations manuelles, dates observées en plus, engins et vols en plus, réglages) dans un petit fichier.",
+  "set.l2": "<b>Charger mes modifications</b> réapplique un tel fichier, par exemple sur un autre appareil ou quelques semaines plus tard : il s'applique par-dessus les dates de référence les plus récentes.",
+  "set.l3": "<b>Annuler mes modifications</b> revient à la seule référence.",
   "Model": "Modèle", "Reference date (empty = today)": "Date de référence (vide = aujourd'hui)", "Points used for each estimate (N)": "Points utilisés pour chaque estimation (N)", "Minimum ratio per unit (0.5 to 1)": "Ratio minimal par engin (0.5 à 1)",
   "Which booster flies with which ship.": "Quel booster vole avec quel ship.", "Add flight": "Ajouter un vol",
   "Discard modifications and load?": "Annuler les modifications et charger ?",
@@ -335,6 +343,11 @@ const FR = {
   "Modifications (JSON)": "Modifications (JSON)", "If no download started, copy this text into a file named data.json.": "Si aucun téléchargement n'a démarré, copiez ce texte dans un fichier nommé data.json.",
 };
 const EN = {
+  "obs.intro": "White dates come from the reference and cannot be changed. You can fill in empty cells and add units (in blue); as soon as a date appears in the reference, it takes over. Red: date earlier than a previous milestone.",
+  "flights.note": "Flights from the reference are fixed; you can add the next ones.",
+  "set.l1": "<b>Download my modifications</b> saves only what you changed (manual estimates, extra observed dates, extra units and flights, settings) as a small file.",
+  "set.l2": "<b>Load my modifications</b> applies such a file again, for example on another device or a few weeks later: it is reapplied on top of the latest reference dates.",
+  "set.l3": "<b>Discard my modifications</b> goes back to the reference only.",
   "home.what": "A community tracker of the Starship production line. Each booster and ship goes through the same milestones, from stacking to launch. Observed dates come from the SpaceX Fandom wiki; the tracker turns them into a forecast for every unit already in production, then pairs boosters and ships into flights.",
   "home.b1": "Production is split into four macro phases: <b>stacking</b>, <b>stacking end → first cryo</b>, <b>first cryo → first static</b>, <b>first static → launch ready</b>.",
   "home.b2": "For milestones already observed, the observed date is kept. Otherwise each phase lasts its <span class=\"est\">estimated</span> duration, or a <span class=\"man\">manual</span> duration set by the maintainer.",
@@ -343,12 +356,9 @@ const EN = {
   "home.n1": "Only units whose stacking has started get a forecast: the wait between \"spotted\" and \"stacking start\" is too irregular to estimate.",
   "home.r1": "Colours of dates and durations: <span class=\"obs\">observed</span>, <span class=\"man\">manual</span>, <span class=\"est\">estimated</span>. In charts, solid marks are observed and hatched bars are forecasts. On learning curves, hollow circles are estimates and triangles are manual estimates.",
   "home.r2": "<b>Right-click any chart</b> (or use its button) to see the numbers behind it.",
-  "home.r3": "Everything is a sandbox: change an observed date, a manual estimate or a setting and every forecast updates live. Your modifications stay in your browser; Settings lets you download or discard them.",
+  "home.r3": "You can add your own manual estimates, observed dates, units or flights: every forecast updates live. Your modifications stay in your browser; Settings lets you download them as a file, load them again later or discard them.",
   "learn.note": "Estimate: geometric mean of the last N observed durations before the unit, extrapolated with the ratio used. Ratio observed: observed duration divided by the previous observed one, to check the model afterwards. Ratio used: fitted ratio per unit, kept between the minimum ratio and 1.",
   "man.note": "Click a value to type a manual duration; × (or an empty value) goes back to the estimate. White values are observed.",
-  "set.l1": "<b>Download modifications</b> saves everything you see (observed dates, manual estimates, flights, settings) as a file, data.json.",
-  "set.l2": "<b>Load dates</b> loads a new dates file (data.json), for example the latest one shared on Discord. It becomes the linked dates file and replaces your modifications. The page remembers it, no need to load it again next time.",
-  "set.l3": "<b>Discard modifications</b> forgets your modifications and goes back to the linked dates file.",
 };
 function t(s, v) { let o = (LANG === "fr" && FR[s]) || EN[s] || s; if (v) for (const k in v) o = o.split("{" + k + "}").join(v[k]); return o; }
 const MONS = { en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], fr: ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."] };
@@ -367,27 +377,48 @@ const r0 = v => (v == null ? "" : Math.round(v));
 const SRC = { obs: "obs", manual: "man", est: "est" };
 const SRCL = new Proxy({ obs: "observed", manual: "manual", est: "estimated" }, { get: (o, k) => t(o[k]) });
 const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }, del(k) { try { localStorage.removeItem(k); } catch (e) {} } };
-const DKEY = "spt-draft-v1";
 
-// reference ("linked") dates = the last dates file loaded in this browser (or the page's built-in copy if newer / first visit)
-const BKEY = "spt-official-v1", NKEY = "spt-official-name";
+// reference = the data.json published on the site (built-in copy if it cannot be read)
+// personal modifications = a small file (my-modifications.json) applied on top; the reference wins on observed dates
+const MKEY = "spt-mods-v1";
 const upd = d => String(d?.meta?.updated || "");
-const updF = d => (upd(d) ? fmt(toDay(upd(d))) : "—");
-let OFFICIAL = JSON.parse($("#official").textContent);
-try { const st = JSON.parse(store.get(BKEY) || "null"); if (st && st.ships && upd(st) >= upd(OFFICIAL)) OFFICIAL = st; else store.del(NKEY); } catch (e) {}
-let data = structuredClone(OFFICIAL);
+const updF = d => (upd(d) ? fmt(toDay(upd(d).slice(0, 10))) : "—");
+let REF = JSON.parse($("#official").textContent), REFSRC = "built-in";
+const emptyMods = () => ({ type: "starship-tracker-modifications", schema: 1, ships: {}, boosters: {}, flights: {}, settings: {} });
+function normMods(m) { const e = emptyMods(); if (!m || typeof m !== "object") return e; for (const k of ["ships", "boosters", "flights", "settings"]) if (m[k] && typeof m[k] === "object" && !Array.isArray(m[k])) e[k] = m[k]; return e; }
+let MODS = (() => { try { return normMods(JSON.parse(store.get(MKEY) || "null")); } catch (e) { return emptyMods(); } })();
+try { localStorage.removeItem("spt-draft-v1"); localStorage.removeItem("spt-official-v1"); localStorage.removeItem("spt-official-name"); } catch (e) {}
+const numOf = n => +((/\d+/.exec(n) || [0])[0]);
+function merge(ref, mods) {
+  const d = structuredClone(ref); d.settings = Object.assign({}, d.settings, mods.settings); d.flights = d.flights || [];
+  for (const K of ["ships", "boosters"]) {
+    const kind = K === "ships" ? "ship" : "booster", list = d[K];
+    for (const [name, m] of Object.entries(mods[K] || {})) {
+      let u = list.find(x => x.name === name);
+      if (!u) { u = { name, dates: Object.fromEntries(d.milestones[kind].map(x => [x, null])), manual: {}, personal: true }; list.push(u); }
+      u.manual = u.manual || {}; u.mine = {};
+      for (const [ms, v] of Object.entries(m.dates || {})) if (v && !u.dates[ms]) { u.dates[ms] = v; u.mine[ms] = true; }
+      for (const [ph, v] of Object.entries(m.manual || {})) u.manual[ph] = v;
+    }
+    list.sort((a, b) => numOf(a.name) - numOf(b.name));
+  }
+  const nRef = d.flights.length;
+  for (const [n, f] of Object.entries(mods.flights || {})) { const i = +n - FIRST_FLIGHT; if (i >= nRef) d.flights[i] = { name: "Flight " + n, ship: f.ship ?? null, booster: f.booster ?? null, personal: true }; }
+  d.flights = Array.from(d.flights, (f, i) => f || { name: "Flight " + (FIRST_FLIGHT + i), ship: null, booster: null, personal: true });
+  return d;
+}
+let data = merge(REF, MODS);
 let R = null;
-const draft = store.get(DKEY);
-if (draft) { try { data = JSON.parse(draft); } catch (e) {} }
-
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.style.display = "block"; clearTimeout(toast.h); toast.h = setTimeout(() => (t.style.display = "none"), 3200); }
-const isDirty = () => JSON.stringify(data) !== JSON.stringify(OFFICIAL);
-function changed() { store.set(DKEY, JSON.stringify(data)); recompute(); }
+const isDirty = () => ["ships", "boosters", "flights", "settings"].some(k => Object.keys(MODS[k]).length);
+function changed() { store.set(MKEY, JSON.stringify(MODS)); data = merge(REF, MODS); recompute(); }
+const refUnit = (K, name) => REF[K].find(u => u.name === name);
+function modUnit(K, name) { return (MODS[K][name] ||= { dates: {}, manual: {} }); }
+function tidy(K, name) { const m = MODS[K][name]; if (m && !m.added && !Object.keys(m.dates || {}).length && !Object.keys(m.manual || {}).length) delete MODS[K][name]; }
 function recompute() {
   R = Engine.compute(Object.assign({}, data, { flights: (data.flights || []).map((f, i) => Object.assign({}, f, { name: String(FIRST_FLIGHT + i) })) }));
   $("#banner").classList.toggle("on", isDirty());
-  if (!isDirty()) store.del(DKEY);
-  $("#upd").textContent = t("Dates of {d}.", { d: updF(OFFICIAL) }); applyStatic();
+  $("#upd").textContent = t("Dates of {d}.", { d: updF(REF) }); applyStatic();
   render();
   if (modalId && $("#modal").classList.contains("on")) { const sx = $("#modal .box").scrollTop; openTable(modalId); $("#modal .box").scrollTop = sx; }
 }
@@ -576,7 +607,7 @@ function vHome() {
   </div><div class="prose">
     <h2>${t("How to read it")}</h2>
     <p>${t("home.r1")}</p><p>${t("home.r2")}</p><p>${t("home.r3")}</p>
-    <p class="note">${t("Dates of {d}: load a newer dates file in Settings when one is shared. Reference date: {r}.", { d: esc(updF(OFFICIAL)), r: fmt(R.ref) })}</p>
+    <p class="note">${t("Reference dates of {d}. Reference date for forecasts: {r}.", { d: esc(updF(REF)), r: fmt(R.ref) })}</p>
   </div></div>`;
 }
 function drawTimeline(W, H) {
@@ -657,14 +688,15 @@ function unitTable(K) {
       const v = u.dates[m] || "", d = toDay(v);
       const prev = msl.slice(1, Math.max(1, k)).map(mm => toDay(u.dates[mm])).filter(x => x != null);
       const bad = k > 1 && d != null && prev.length && d < Math.max(...prev);
-      return `<td>${dateInput(v, `data-k="${K}" data-i="${i}" data-m="${esc(m)}"${bad ? ' data-bad="1"' : ""}`, u.name + " " + m).replace('class="', bad ? 'class="bad ' : 'class="')}</td>`; }).join("");
-    return `<tr><td><input class="nm" value="${esc(u.name)}" data-k="${K}" data-i="${i}" data-f="name" aria-label="Name"></td>${cells}<td>${esc(tm(r?.status || ""))}</td><td><button class="tbtn" data-act="del" data-k="${K}" data-i="${i}">${t("Remove")}</button></td></tr>`;
+      if (v && !u.mine?.[m]) return `<td class="obs${bad ? " bad" : ""}">${fmt(d)}</td>`;
+      return `<td>${dateInput(v, `data-k="${K}" data-i="${i}" data-m="${esc(m)}"`, u.name + " " + m).replace('class="', `class="${v ? "mine " : ""}${bad ? "bad " : ""}`)}</td>`; }).join("");
+    return `<tr><td class="${u.personal ? "man" : "flt"}">${esc(u.name)}</td>${cells}<td>${esc(tm(r?.status || ""))}</td><td>${u.personal ? `<button class="tbtn" data-act="del" data-k="${K}" data-n="${esc(u.name)}">${t("Remove")}</button>` : ""}</td></tr>`;
   }).join("");
   return `<div class="card" style="margin-bottom:20px"><div class="card-h"><h3>${lbl}</h3><button class="btn" data-act="add" data-k="${K}">${t(K === "ships" ? "Add ship" : "Add booster")}</button></div>
   <div class="scroll"><table class="edit"><thead><tr><th>${t(K === "ships" ? "Ship" : "Booster")}</th>${msl.map(m => `<th>${esc(tm(m))}</th>`).join("")}<th>${t("Last milestone")}</th><th></th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 function vObserved() {
-  $("#v-observed").innerHTML = `<div class="card-h" style="margin-bottom:16px"><div><h2>${t("Observed milestones")}</h2><p>${t("Dates actually observed for each milestone. Red: date earlier than a previous milestone. Manual estimates are set in the Ships and Boosters tabs.")}</p></div></div>
+  $("#v-observed").innerHTML = `<div class="card-h" style="margin-bottom:16px"><div><h2>${t("Observed milestones")}</h2><p>${t("obs.intro")}</p></div></div>
   ${unitTable("boosters")}${unitTable("ships")}`;
 }
 function vSetup() {
@@ -673,37 +705,43 @@ function vSetup() {
   $("#v-setup").innerHTML = `<div class="card-h" style="margin-bottom:16px"><div><h2>${t("Settings")}</h2><p>${t("Your modifications, model parameters and flight pairings.")}</p></div></div>
   <div class="card" style="margin-bottom:20px"><h3 style="margin-bottom:10px">${t("Language")}</h3>
     <select id="sLang" aria-label="${t("Language")}"><option value="en" ${LANG === "en" ? "selected" : ""}>English</option><option value="fr" ${LANG === "fr" ? "selected" : ""}>Français</option></select></div>
-  <div class="card" id="mods" style="margin-bottom:20px"><h3 style="margin-bottom:10px">${t("Modifications")}</h3>
-    <p style="margin:0 0 4px">${t("Linked dates file:")} <b>${esc(store.get(NKEY) || t("built into the page"))}</b> <span class="note">· ${t("dates of {d}", { d: esc(updF(OFFICIAL)) })}</span></p>
-    <p class="note" style="margin-top:0">${isDirty() ? t("Your modifications apply on top of this file. They are saved automatically, but only in this browser.") : t("No modifications.")}</p>
-    <div class="row"><button class="btn" data-act="save">${t("Download modifications")}</button><button class="btn ghost" data-act="open">${t("Load dates")}</button><button class="btn ghost" data-act="copy">${t("Copy as text")}</button><button class="btn ghost" data-act="reset">${t("Discard modifications")}</button></div>
+  <div class="card" id="mods" style="margin-bottom:20px"><h3 style="margin-bottom:10px">${t("My modifications")}</h3>
+    <p style="margin:0 0 4px">${t("Reference:")} <b>${t(REFSRC === "site" ? "dates published on the site" : "copy built into the page")}</b> <span class="note">· ${t("dates of {d}", { d: esc(updF(REF)) })}</span></p>
+    <p class="note" style="margin-top:0">${isDirty() ? t("Your modifications apply on top of the reference. They are saved automatically, but only in this browser.") : t("No modifications.")}</p>
+    <div class="row"><button class="btn" data-act="save">${t("Download my modifications")}</button><button class="btn ghost" data-act="open">${t("Load my modifications")}</button><button class="btn ghost" data-act="copy">${t("Copy as text")}</button><button class="btn ghost" data-act="reset">${t("Discard my modifications")}</button></div>
     <ul class="note" style="margin:12px 0 0;padding-left:18px"><li>${t("set.l1")}</li><li>${t("set.l2")}</li><li>${t("set.l3")}</li></ul></div>
   <div class="card"><h3 style="margin-bottom:14px">${t("Model")}</h3><div class="grid g4" style="align-items:end">
     <label class="f">${t("Reference date (empty = today)")}${dateInput(s.refDate, 'id="sRef"', t("Reference date (empty = today)"))}</label>
     <label class="f">${t("Points used for each estimate (N)")}<input type="number" id="sN" min="1" max="10" step="1" value="${esc(s.nPoints ?? 4)}"></label>
     <label class="f">${t("Minimum ratio per unit (0.5 to 1)")}<input type="number" id="sRm" min="0.5" max="1" step="0.01" value="${esc(s.ratioMin ?? 0.85)}"></label>
   </div></div>
-  <div class="card" style="margin-top:20px"><div class="card-h"><div><h3>${t("Flights")}</h3><p>${t("Which booster flies with which ship.")}</p></div><button class="btn" data-act="addf">${t("Add flight")}</button></div>
+  <div class="card" style="margin-top:20px"><div class="card-h"><div><h3>${t("Flights")}</h3><p>${t("flights.note")}</p></div><button class="btn" data-act="addf">${t("Add flight")}</button></div>
   <div class="scroll"><table class="edit"><thead><tr><th>${t("Flight")}</th><th>${t("Booster")}</th><th>${t("Ship")}</th><th>${tm("Launch")}</th><th></th></tr></thead><tbody>
-  ${data.flights.map((f, i) => `<tr><td class="flt">${FIRST_FLIGHT + i}</td><td><select data-fl="${i}" data-f="booster" aria-label="${t("Booster")}">${opt(data.boosters, f.booster)}</select></td><td><select data-fl="${i}" data-f="ship" aria-label="${t("Ship")}">${opt(data.ships, f.ship)}</select></td><td class="${SRC[R.flights[i]?.src] || ""}">${R.flights[i]?.date != null ? fmt(R.flights[i].date) : esc(t(R.flights[i]?.status || ""))}</td><td><button class="tbtn" data-act="delf" data-i="${i}">${t("Remove")}</button></td></tr>`).join("")}
+  ${data.flights.map((f, i) => { const n = FIRST_FLIGHT + i, lastP = f.personal && i === data.flights.length - 1;
+    const cellSel = (k, list) => f.personal ? `<select data-fl="${n}" data-f="${k}" aria-label="${t(k === "ship" ? "Ship" : "Booster")}">${opt(list, f[k])}</select>` : esc(f[k] || "");
+    return `<tr><td class="${f.personal ? "man" : "flt"}">${n}</td><td>${cellSel("booster", data.boosters)}</td><td>${cellSel("ship", data.ships)}</td><td class="${SRC[R.flights[i]?.src] || ""}">${R.flights[i]?.date != null ? fmt(R.flights[i].date) : esc(t(R.flights[i]?.status || ""))}</td><td>${lastP ? `<button class="tbtn" data-act="delf" data-n="${n}">${t("Remove")}</button>` : ""}</td></tr>`; }).join("")}
   </tbody></table></div></div>`;
 }
 
 // ---------- events
 let modalId = null;
-function setManual(K, i, p, v) { const u = data[K][i]; u.manual = u.manual || {}; u.manual[PHASES[p]] = v == null ? null : Math.max(0, Math.round(v)); changed(); }
+function setManual(K, i, p, v) {
+  const name = data[K][i].name, ph = PHASES[p], m = modUnit(K, name), refHas = refUnit(K, name)?.manual?.[ph] != null;
+  if (v == null) { if (refHas) m.manual[ph] = null; else delete m.manual[ph]; } else m.manual[ph] = Math.max(0, Math.round(v));
+  tidy(K, name); changed();
+}
+function setSetting(k, v) { if (v == null || v === (REF.settings || {})[k]) delete MODS.settings[k]; else MODS.settings[k] = v; changed(); }
 document.addEventListener("change", e => {
   const t = e.target, ds = t.dataset;
   if (ds.cancel) return;
   if (t.type === "date") t.classList.toggle("empty", !t.value);
-  if (ds.m) { const u = data[ds.k][+ds.i]; u.dates[ds.m] = t.value || null; changed(); }
+  if (ds.m) { const name = data[ds.k][+ds.i].name, m = modUnit(ds.k, name); if (t.value) m.dates[ds.m] = t.value; else delete m.dates[ds.m]; tidy(ds.k, name); changed(); }
   else if (ds.p != null && ds.k) setManual(ds.k, +ds.i, +ds.p, t.value === "" ? null : +t.value);
-  else if (ds.f === "name" && ds.k) { const old = data[ds.k][+ds.i].name, nw = t.value.trim() || old; data[ds.k][+ds.i].name = nw; data.flights.forEach(f => { if (f.ship === old) f.ship = nw; if (f.booster === old) f.booster = nw; }); changed(); }
-  else if (ds.fl != null) { data.flights[+ds.fl][ds.f] = t.value || null; changed(); }
-  else if (t.id === "sRef") { data.settings.refDate = t.value || null; changed(); }
-  else if (t.id === "sN") { data.settings.nPoints = Math.min(10, Math.max(1, Math.round(+t.value || 4))); changed(); }
+  else if (ds.fl != null) { (MODS.flights[ds.fl] ||= { ship: null, booster: null })[ds.f] = t.value || null; changed(); }
+  else if (t.id === "sRef") setSetting("refDate", t.value || null);
+  else if (t.id === "sN") setSetting("nPoints", Math.min(10, Math.max(1, Math.round(+t.value || 4))));
   else if (t.id === "sLang") { LANG = t.value === "fr" ? "fr" : "en"; store.set(LKEY, LANG); recompute(); }
-  else if (t.id === "sRm") { data.settings.ratioMin = Math.min(1, Math.max(0.5, +t.value || 0.85)); changed(); }
+  else if (t.id === "sRm") setSetting("ratioMin", Math.min(1, Math.max(0.5, +t.value || 0.85)));
 });
 document.addEventListener("click", async e => {
   const mk = e.target.closest("[data-mk]");
@@ -717,16 +755,15 @@ document.addEventListener("click", async e => {
   else if (a === "mclear") setManual(b.dataset.k, +b.dataset.i, +b.dataset.p, null);
   else if (a === "unman") { const [K, p, i] = $("#menu").dataset.drag.split("|"); $("#menu").style.display = "none"; setManual(K, +i, +p, null); }
   else if (a === "close") { $("#modal").classList.remove("on"); modalId = null; }
-  else if (a === "add") { const K = b.dataset.k, kind = K === "ships" ? "ship" : "booster", list = data[K];
-    const lastN = list.length ? list[list.length - 1].name : (K === "ships" ? "S0" : "B0"), m = /^(\D*)(\d+)$/.exec(lastN);
-    list.push({ name: m ? m[1] + (+m[2] + 1) : lastN + "+", dates: Object.fromEntries(data.milestones[kind].map(x => [x, null])), manual: Object.fromEntries(PHASES.map(p => [p, null])) }); changed(); }
-  else if (a === "del") { if (b.dataset.armed) { data[b.dataset.k].splice(+b.dataset.i, 1); changed(); } else { b.dataset.armed = 1; b.textContent = t("Confirm?"); } }
-  else if (a === "addf") { const n = data.flights.length ? data.flights[data.flights.length - 1].name : "Flight 0", m = /^(\D*)(\d+)$/.exec(n || ""); data.flights.push({ name: `Flight ${FIRST_FLIGHT + data.flights.length}`, ship: null, booster: null }); changed(); }
-  else if (a === "delf") { if (b.dataset.armed) { data.flights.splice(+b.dataset.i, 1); changed(); } else { b.dataset.armed = 1; b.textContent = t("Confirm?"); } }
-  else if (a === "reset") { data = structuredClone(OFFICIAL); store.del(DKEY); recompute(); toast(t("Modifications discarded.")); }
+  else if (a === "add") { const K = b.dataset.k, list = data[K], max = Math.max(0, ...list.map(u => numOf(u.name)));
+    const name = (K === "ships" ? "S" : "B") + (max + 1); MODS[K][name] = { added: true, dates: {}, manual: {} }; changed(); }
+  else if (a === "del") { if (b.dataset.armed) { const K = b.dataset.k, n = b.dataset.n; delete MODS[K][n]; for (const f of Object.values(MODS.flights)) { if (f.ship === n) f.ship = null; if (f.booster === n) f.booster = null; } changed(); } else { b.dataset.armed = 1; b.textContent = t("Confirm?"); } }
+  else if (a === "addf") { MODS.flights[FIRST_FLIGHT + data.flights.length] = { ship: null, booster: null }; changed(); }
+  else if (a === "delf") { if (b.dataset.armed) { delete MODS.flights[b.dataset.n]; changed(); } else { b.dataset.armed = 1; b.textContent = t("Confirm?"); } }
+  else if (a === "reset") { if (b.dataset.armed || !isDirty()) { MODS = emptyMods(); store.del(MKEY); data = merge(REF, MODS); recompute(); toast(t("Modifications discarded.")); } else { b.dataset.armed = 1; b.textContent = t("Confirm?"); } }
   else if (a === "open") openJSON(b);
   else if (a === "save") saveJSON();
-  else if (a === "copy") { try { await navigator.clipboard.writeText(JSON.stringify(data, null, 1)); toast(t("Modifications copied to the clipboard.")); } catch (err) { showJSON(); } }
+  else if (a === "copy") { try { await navigator.clipboard.writeText(JSON.stringify(MODS, null, 1)); toast(t("Modifications copied to the clipboard.")); } catch (err) { showJSON(); } }
 });
 // drag manual triangles
 let drag = null;
@@ -782,31 +819,27 @@ document.addEventListener("mousemove", e => {
 function validData(d) { return d && Array.isArray(d.ships) && Array.isArray(d.boosters) && d.milestones?.ship && d.milestones?.booster; }
 function loadText(txt, name) {
   let d; try { d = JSON.parse(txt); } catch (err) { toast(t("This file is not valid JSON.")); return; }
-  if (!validData(d)) { toast(t("This JSON does not look like tracker data.")); return; }
-  d.flights = d.flights || []; d.settings = d.settings || {};
-  setOfficial(d, name); toast(t("Loaded {f}: dates of {d}.", { f: name || "file", d: updF(d) }));
+  if (!d || d.type !== "starship-tracker-modifications") { toast(t("This is not a modifications file.")); return; }
+  MODS = normMods(d); changed(); toast(t("Loaded {f}.", { f: name || "file" }));
 }
-function setOfficial(d, name) { OFFICIAL = d; store.set(BKEY, JSON.stringify(d)); if (name) store.set(NKEY, name); else store.del(NKEY); data = structuredClone(d); store.del(DKEY); recompute(); }
 function openJSON(btn) {
-  if (isDirty() && btn && !btn.dataset.armed) { btn.dataset.armed = 1; btn.textContent = t("Discard modifications and load?"); return; }
+  if (isDirty() && btn && !btn.dataset.armed) { btn.dataset.armed = 1; btn.textContent = t("Replace my modifications?"); return; }
   $("#file").click();
 }
 $("#file").addEventListener("change", async e => { const f = e.target.files[0]; if (f) loadText(await f.text(), f.name); e.target.value = ""; });
 document.addEventListener("dragover", e => e.preventDefault());
 document.addEventListener("drop", async e => { const f = e.dataTransfer?.files?.[0]; if (!f) return; e.preventDefault(); loadText(await f.text(), f.name); });
 async function saveJSON() {
-  const out = Object.assign({}, data, { meta: Object.assign({}, data.meta, { updated: new Date().toISOString().slice(0, 10) }) });
-  try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 1)], { type: "application/json" })); a.download = "data.json"; document.body.appendChild(a); a.click(); a.remove(); } catch (err) {}
-  toast(t("data.json downloaded. If nothing happened, use Copy as text."));
+  const out = Object.assign({}, MODS, { saved: new Date().toISOString().slice(0, 16), reference: upd(REF) });
+  try { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 1)], { type: "application/json" })); a.download = t("my-modifications.json"); document.body.appendChild(a); a.click(); a.remove(); } catch (err) {}
+  toast(t("{f} downloaded. If nothing happened, use Copy as text.", { f: t("my-modifications.json") }));
 }
-function showJSON() { modalId = null; $("#mt").textContent = t("Modifications (JSON)"); $("#mb").innerHTML = `<p class="note">${t("If no download started, copy this text into a file named data.json.")}</p><textarea readonly>${esc(JSON.stringify(data, null, 1))}</textarea><div class="row" style="margin-top:10px"><button class="btn" data-act="copy">${t("Copy as text")}</button></div>`; $("#modal").classList.add("on"); }
+function showJSON() { modalId = null; $("#mt").textContent = t("My modifications (JSON)"); $("#mb").innerHTML = `<p class="note">${t("Copy this text into a file named {f}.", { f: t("my-modifications.json") })}</p><textarea readonly>${esc(JSON.stringify(MODS, null, 1))}</textarea><div class="row" style="margin-top:10px"><button class="btn" data-act="copy">${t("Copy as text")}</button></div>`; $("#modal").classList.add("on"); }
 
-// hosted: prefer a data.json next to the page
+// reference: the data.json published next to the page
 (async () => {
-  if (/^https?:/.test(location.protocol)) {
-    try { const r = await fetch("data.json", { cache: "no-store" }); if (r.ok) { const d = await r.json(); if (validData(d) && upd(d) > upd(OFFICIAL)) { const wasClean = !isDirty(); OFFICIAL = d; store.set(BKEY, JSON.stringify(d)); store.set(NKEY, "data.json (website)"); if (wasClean) data = structuredClone(d); } } } catch (err) {}
-  }
   recompute();
+  try { const r = await fetch("data.json", { cache: "no-store" }); if (r.ok) { const d = await r.json(); if (validData(d)) { REF = d; REFSRC = "site"; data = merge(REF, MODS); recompute(); } } } catch (err) {}
 })();
 }
 </script>
